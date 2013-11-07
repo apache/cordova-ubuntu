@@ -1,0 +1,90 @@
+<!--
+
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+
+-->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Cordova-Qt Test Page</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <script language="javascript" type="text/javascript" src="cordova-@VERSION@.js"></script>
+        <script language="javascript" type="text/javascript" src="basic.js"></script>
+
+        <style type="text/css">
+            input {
+                height: 60px;
+                margin-top: 15px;
+            }
+        </style>
+    </head>
+    <body>
+        <input type="button" value="CaptureAudio" onclick="captureAudio()"/>
+        <div id="audio"></div>
+        <br />
+        <input type="button" value="Capture" onclick="captureImage()"/>
+        <div id="pics"></div>
+        <br />
+        <input type="button" value="record video" onclick="recordVideo()"/>
+        <div id="videos"></div>
+        <br />
+        <input type="button" value="Init Watchers" onclick="init();"/>
+        <br />
+        <input type="button" value="Vibrate" onclick="test_vibra();"/>
+        <br />
+        <input type="button" value="Alert/Confirm" onclick="test_alert_confirm();">
+        <br />
+        <input type="button" value="Check Connection" onclick="getCurrentConnectionType();">
+        <br />
+        <input type="button" value="Request File System" onclick="test_requestFileSystem();">
+        <br />
+        <div id="debug_output"> </div>
+        <input type="button" value="Get Current Position" onclick="getCurrentPosition();">
+        <br />
+        <div id="position_val"> Location </div>
+        <input type="button" value="Get Acceleration" onclick="getCurrentAcceleration();">
+        <br />
+        <div id="accel_val"> Acceleration </div>
+        <input type="button" value="Get Current Heading" onclick="getCurrentHeading();">
+        <br />
+        <div id="heading_val"> Heading </div>
+        <input type="button" value="Get Picture" onclick="getPicture();">
+        <br />
+        <div id="picture_val"> Picture</div>
+        <input type="button" value="Create Test Contact" onclick="createTestContact();">
+        <br />
+        <div id="create_contact_result"></div>
+        <input type="button" value="Search for Test Contact" onclick="searchForTestContact();">
+        <br />
+        <div id="search_contact_result"></div>
+        <input type="button" value="Remove Test Contact" onclick="removeTestContact();">
+        <br />
+        <div id="remove_contact_result"></div>
+        <input type="button" value="Media Open" onclick="mediaOpen();">
+        <input type="button" value="Play" onclick="mediaPlay();">
+        <input type="button" value="Pause" onclick="mediaPause();">
+        <input type="button" value="Stop" onclick="mediaStop();">
+        <input type="button" value="Start Recording" onclick="mediaStartRecording();">
+        <input type="button" value="Stop Recording" onclick="mediaStopRecording();">
+        <input type="button" value="FF 5sec" onclick="mediaFF5sec();">
+        <br />
+        <div id="media_position_duration_val"> Position/Duration</div>
+    </body>
+</html>
