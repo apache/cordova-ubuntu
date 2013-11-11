@@ -16,16 +16,10 @@
  */
 
 #include <QtCore>
+#include <QtXml>
 #include <QApplication>
-#include <QQuickView>
-#include <QQuickItem>
-#include <QQmlContext>
-#include <QQmlEngine>
-
-#ifdef Q_OS_LINUX
-#include <xcb/xcb.h>
-#include <xcb/xproto.h>
-#endif
+#include <QtQuick>
+#include <cassert>
 
 static void customMessageOutput(QtMsgType type, const QMessageLogContext &, const QString &msg) {
     switch (type) {
@@ -48,50 +42,59 @@ static void customMessageOutput(QtMsgType type, const QMessageLogContext &, cons
 
 int main(int argc, char *argv[]) {
     qInstallMessageHandler(customMessageOutput);
-    QScopedPointer<QApplication> app(new QApplication(argc, argv));
+    QApplication app(argc, argv);
 
     //TODO: switch to options parser
     // temprory hack to filter --desktop_file_hint
-    QStringList args = app->arguments().filter(QRegularExpression("^[^-]"));
+    QStringList args = app.arguments().filter(QRegularExpression("^[^-]"));
 
-    std::string wm_class;
     QDir wwwDir;
-    qDebug() << args << args[args.size() - 1];
     if (QDir(args[args.size() - 1]).exists()) {
-        QDir app_dir(args[args.size() - 1]);
-        QDir parent(app_dir);
-        parent.cdUp();
-        wm_class = parent.dirName().toStdString();
-        wwwDir = app_dir;
+        wwwDir = QDir(args[args.size() - 1]);
     } else {
         wwwDir = QDir(QApplication::applicationDirPath());
         wwwDir.cd("www");
     }
 
-    QScopedPointer<QQuickView> view(new QQuickView());;
+    QQuickView view;
 
-    std::string execDir = "/usr/bin";
-    QDir workingDir;
-    if (QApplication::applicationDirPath().toStdString().substr(0, execDir.size()) == execDir) {
-        workingDir = QString("/usr/share/cordova-ubuntu-") + CORDOVA_UBUNTU_VERSION;
-    } else {
-        workingDir = QApplication::applicationDirPath();
+    QDir workingDir = QApplication::applicationDirPath();
+
+    view.rootContext()->setContextProperty("www", wwwDir.absolutePath());
+    view.setSource(QUrl(QString("%1/qml/main.qml").arg(workingDir.absolutePath())));
+
+    QDomDocument config;
+
+    QFile f1(QApplication::applicationDirPath() + "/config.xml");
+    f1.open(QIODevice::ReadOnly);
+
+    config.setContent(f1.readAll(), false);
+
+    QString id = config.documentElement().attribute("id");
+    QString version = config.documentElement().attribute("version");
+    assert(id.size());
+
+    QCoreApplication::setApplicationName(id);
+    QCoreApplication::setApplicationVersion(version);
+
+    bool fullscreen = false;
+    QDomNodeList preferences = config.documentElement().elementsByTagName("preference");
+    for (int i = 0; i < preferences.size(); ++i) {
+        QDomNode node = preferences.at(i);
+        QDomElement* element = static_cast<QDomElement*>(&node);
+
+        QString name = element->attribute("name"), value = element->attribute("value");
+
+        if (name == "Fullscreen")
+            fullscreen = value == "true";
     }
 
-    view->rootContext()->setContextProperty("www", wwwDir.absolutePath());
-    view->setSource(QUrl(QString("%1/qml/main.qml").arg(workingDir.absolutePath())));
+    view.setResizeMode(QQuickView::SizeRootObjectToView);
 
-#if defined(Q_OS_LINUX) && defined(Q_PROCESSOR_X86)
-    if (wm_class.size()) {
-        xcb_connection_t *c = xcb_connect(NULL,NULL);
-        xcb_change_property(c, XCB_PROP_MODE_REPLACE, view->winId(), XCB_ATOM_WM_CLASS, XCB_ATOM_STRING, 8, wm_class.size(), wm_class.c_str());
-        xcb_flush(c);
-        xcb_disconnect(c);
-    }
-#endif
+    if (fullscreen)
+        view.showFullScreen();
+    else
+        view.show();
 
-    view->setResizeMode(QQuickView::SizeRootObjectToView);
-    view->show();
-
-    return app->exec();
+    return app.exec();
 }
