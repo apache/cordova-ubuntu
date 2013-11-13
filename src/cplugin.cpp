@@ -125,13 +125,13 @@ namespace CordovaInternal {
         case QMetaType::Bool:
             return format(t.toBool());
         case QMetaType::QVariantMap:
-            return format(t.toMap(), true);
+            return format(t.toMap());
         default:
             throw std::exception();
         }
     }
 
-    QString format(const QVariantMap &t, bool clean) {
+    QString format(const QVariantMap &t) {
       // QString(QJsonDocument(QJsonObject::fromVariantMap(t)).toJson()) is not good enough
       // e.g. QVariant(qlonglong, 1374944677139) ) -> 1.37494e+12
 
@@ -142,10 +142,9 @@ namespace CordovaInternal {
               res += ", ";
           res += QString("%1: %2").arg(format(p.first)).arg(format(p.second));
       }
-      if (clean)
-          res = QString("{%1}").arg(res);
-      else
-          res = QString("JSON.parse('{%1}')").arg(res);
+
+      res = QString("{%1}").arg(res);
+
       return res;
     }
 };

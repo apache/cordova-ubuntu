@@ -63,7 +63,7 @@ namespace CordovaInternal {
     QString format(const double &t);
     QString format(const float &t);
     QString format(const QVariant &t);
-    QString format(const QVariantMap &t, bool clean = false);
+    QString format(const QVariantMap &t);
     QString format(bool t);
 
     template<class Head = QString>
