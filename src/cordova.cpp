@@ -64,7 +64,7 @@ QString Cordova::getSplashscreenPath() {
 }
 
 void Cordova::initPlugins() {
-    QList<QDir> searchPath = {QDir("/usr/lib/cordova-ubuntu-" CORDOVA_UBUNTU_VERSION), get_app_dir()};
+    QList<QDir> searchPath = {get_app_dir()};
 
     m_plugins.clear();
     for (QDir pluginsDir: searchPath) {
