@@ -33,6 +33,9 @@ Item {
     function exec(plugin, func, args) {
         CordovaWrapper.execMethod(plugin, func, args);
     }
+    function plugin(plugin) {
+        return CordovaWrapper.pluginObjects[plugin];
+    }
 
     Rectangle {
         id: webViewContainer
