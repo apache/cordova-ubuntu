@@ -28,8 +28,8 @@ Item {
     state: "main"
     id: root
     signal completed
-    property string wwwDir
     property string splashscreenPath
+    property bool disallowOverscroll
     function exec(plugin, func, args) {
         CordovaWrapper.execMethod(plugin, func, args);
     }
@@ -45,6 +45,7 @@ Item {
             anchors.fill: parent
             objectName: "webView"
 
+            boundsBehavior: disallowOverscroll ? Flickable.StopAtBounds : Flickable.DragAndOvershootBounds
             property string scheme: "file"
             experimental.preferences.navigatorQtObjectEnabled: true
             experimental.preferences.localStorageEnabled: true

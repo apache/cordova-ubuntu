@@ -22,6 +22,7 @@ import CordovaUbuntu @VERSION@
 Item {
     id: root
     property string wwwDir
+    property bool disallowOverscroll
 
     Cordova {
         id: cordova
@@ -42,6 +43,8 @@ Item {
                 loader.item.visible = true
                 loader.visible = true
                 splashscreen.visible = false
+
+                loader.item.disallowOverscroll = disallowOverscroll
             });
         }
     }
