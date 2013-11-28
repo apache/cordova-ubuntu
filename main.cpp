@@ -59,9 +59,7 @@ int main(int argc, char *argv[]) {
     QQuickView view;
 
     QDir workingDir = QApplication::applicationDirPath();
-
     view.rootContext()->setContextProperty("www", wwwDir.absolutePath());
-    view.setSource(QUrl(QString("%1/qml/main.qml").arg(workingDir.absolutePath())));
 
     QDomDocument config;
 
@@ -78,6 +76,7 @@ int main(int argc, char *argv[]) {
     QCoreApplication::setApplicationVersion(version);
 
     bool fullscreen = false;
+    bool disallowOverscroll = false;
     QDomNodeList preferences = config.documentElement().elementsByTagName("preference");
     for (int i = 0; i < preferences.size(); ++i) {
         QDomNode node = preferences.at(i);
@@ -87,9 +86,14 @@ int main(int argc, char *argv[]) {
 
         if (name == "Fullscreen")
             fullscreen = value == "true";
+        if (name == "DisallowOverscroll")
+            disallowOverscroll = value == "true";
     }
 
     view.setResizeMode(QQuickView::SizeRootObjectToView);
+    view.rootContext()->setContextProperty("overscroll", !disallowOverscroll);
+
+    view.setSource(QUrl(QString("%1/qml/main.qml").arg(workingDir.absolutePath())));
 
     if (fullscreen)
         view.showFullScreen();

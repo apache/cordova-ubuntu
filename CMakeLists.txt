@@ -22,33 +22,6 @@ configure_file (
 
 SET(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra -DCORDOVA_UBUNTU_VERSION=\\\"${VERSION}\\\" -DCORDOVA_UBUNTU_MAJOR_VERSION=${MAJOR_VERSION} -DCORDOVA_UBUNTU_MINOR_VERSION=${MINOR_VERSION} -I ${PROJECT_SOURCE_DIR}/src")
 
-set(js_src
-  src/js/require.js
-  src/js/cordova.js
-  src/js/common/argscheck.js
-  src/js/common/builder.js
-  src/js/common/channel.js
-  src/js/common/commandProxy.js
-  src/js/common/modulemapper.js
-  src/js/common/pluginloader.js
-  src/js/common/symbols.js
-  src/js/common/utils.js
-  src/js/exec.js
-
-  src/js/platform.js
-  src/js/bootstrap.js
-)
-
-add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/www/cordova.js
-  COMMAND echo \"\(function\(\){\" > ${PROJECT_BINARY_DIR}/www/cordova.js
-  COMMAND cat ${js_src} >> ${PROJECT_BINARY_DIR}/www/cordova.js
-  COMMAND echo \"}\)\(\)\;\" >> ${PROJECT_BINARY_DIR}/www/cordova.js
-  DEPENDS ${js_src} ${PROJECT_BINARY_DIR}/www/index.html
-  SOURCE ${js_src}
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-)
-add_custom_target(concatenate_js DEPENDS ${PROJECT_BINARY_DIR}/www/cordova.js)
-
 add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/qml
   COMMAND mkdir -p ${PROJECT_BINARY_DIR}/qml
   COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/main.qml ${PROJECT_BINARY_DIR}/qml
@@ -69,15 +42,7 @@ add_custom_command(
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/xml ${PROJECT_BINARY_DIR}/xml
   DEPENDS ${tmp} ${PROJECT_SOURCE_DIR}/xml
 )
-file(GLOB tmp www/*)
-add_custom_command(
-  OUTPUT ${PROJECT_BINARY_DIR}/www/index.html
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/www ${PROJECT_BINARY_DIR}/www
-  COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/libcoreplugins.so ${PROJECT_BINARY_DIR}/www
-  COMMAND sed "s/\@VERSION\@/${VERSION}/" "${PROJECT_SOURCE_DIR}/www/index.html.in" > "${PROJECT_BINARY_DIR}/www/index.html"
-  DEPENDS ${tmp} ${PROJECT_SOURCE_DIR}/www/index.html.in coreplugins
-)
-add_custom_target(copy_wwwqmlxml DEPENDS ${PROJECT_BINARY_DIR}/www/index.html ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION} ${PROJECT_BINARY_DIR}/xml ${PROJECT_BINARY_DIR}/qml)
+add_custom_target(copy_wwwqmlxml DEPENDS ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION} ${PROJECT_BINARY_DIR}/xml ${PROJECT_BINARY_DIR}/qml)
 
 find_package(Qt5Widgets)
 find_package(Qt5Core)
@@ -85,8 +50,8 @@ find_package(Qt5Core)
 add_executable(cordova-ubuntu
   main.cpp
 )
-qt5_use_modules(cordova-ubuntu Widgets Quick)
-add_dependencies(cordova-ubuntu concatenate_js copy_wwwqmlxml)
+qt5_use_modules(cordova-ubuntu Widgets Quick Xml)
+add_dependencies(cordova-ubuntu copy_wwwqmlxml)
 
 ADD_LIBRARY(cordovaubuntuplugin SHARED
   src/cplugin.cpp
@@ -129,6 +94,6 @@ query_qmake(QT_INSTALL_QML QT_IMPORTS_DIR)
 
 install (TARGETS cordova-ubuntu DESTINATION ${CMAKE_INSTALL_PREFIX})
 install (TARGETS coreplugins DESTINATION ${CMAKE_INSTALL_PREFIX}/www)
-install (FILES ${PROJECT_BINARY_DIR}/www/cordova.js DESTINATION ${CMAKE_INSTALL_PREFIX}/www/)
+install (FILES ${PROJECT_SOURCE_DIR}/www/cordova.js DESTINATION ${CMAKE_INSTALL_PREFIX}/www/)
 install (DIRECTORY ${PROJECT_BINARY_DIR}/qml DESTINATION ${CMAKE_INSTALL_PREFIX})
 install (DIRECTORY ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION} DESTINATION ${CMAKE_INSTALL_PREFIX})
