@@ -21,9 +21,7 @@
 var path = require('path');
 var args = process.argv;
 var ROOT = path.join(__dirname, '..');
-var shell = require('shelljs');
 var fs    = require('fs');
-var et    = require('elementtree');
 
 function help() {
     console.log('Usage: ' + path.relative(process.cwd(), path.join(ROOT, 'bin', 'create')) + ' <path_to_new_project> <package_name> <project_name>');
@@ -34,6 +32,24 @@ function help() {
 }
 
 function create(project_path, package_name, project_name, project_template_dir) {
+    try {
+        require.resolve("shelljs");
+        require.resolve("elementtree");
+    } catch(e) {
+        console.log('Shelljs module was not found, running \'npm install\'.....');
+        var exec = require('child_process').exec;
+        var cwd = process.cwd();
+        process.chdir(__dirname);
+        exec('npm install shelljs elementtree',  function (error, stdout, stderr) {
+            if (error !== null) {
+                console.error('ERROR : running \'npm install\' is npm installed? ' + error);
+                console.error(stderr);
+                process.exit(error.code);
+            }
+            process.chdir(cwd);
+        });
+    }
+
     // Check if project already exists
     if(fs.existsSync(project_path)) {
         console.error('Project already exists! Delete and recreate');
@@ -43,11 +59,8 @@ function create(project_path, package_name, project_name, project_template_dir) 
     shell.cp('-r', path.join(ROOT, '*'), path.join(project_path, 'build'));
     shell.cp('-r', path.join(ROOT, 'bin/build/*'), path.join(project_path, 'cordova'));
     shell.cp('-r', path.join(ROOT, 'xml/config.xml'), project_path);
-    // TODO:TAREGET API
 
     shell.cd(project_path);
-//    console.log(project_path + "|" + project_name + "|" + project_template_dir + "|" + ROOT);
-//throw new Error();
 }
 
 if(args.length < 3 || (args[2] == '--help' || args[2] == '/?' || args[2] == '-h' ||
