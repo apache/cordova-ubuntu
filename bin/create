@@ -32,35 +32,51 @@ function help() {
 }
 
 function create(project_path, package_name, project_name, project_template_dir) {
+    function create_project() {
+        var shell = require("shelljs");
+        // Check if project already exists
+        if(fs.existsSync(project_path)) {
+            console.error('Project already exists! Delete and recreate');
+            process.exit(2);
+        }
+        shell.mkdir(project_path);
+        shell.cp('-r', path.join(ROOT, '*'), path.join(project_path, 'build'));
+        shell.cp('-r', path.join(ROOT, 'bin/build/*'), path.join(project_path, 'cordova'));
+
+        shell.cp('-r', path.join(ROOT, 'bin/node_modules'), path.join(project_path, 'cordova'));
+
+        shell.cp('-r', path.join(ROOT, 'xml/config.xml'), project_path);
+
+        shell.cd(project_path);
+    }
+
     try {
         require.resolve("shelljs");
         require.resolve("elementtree");
+        create_project();
     } catch(e) {
         console.log('Shelljs module was not found, running \'npm install\'.....');
         var exec = require('child_process').exec;
         var cwd = process.cwd();
-        process.chdir(__dirname);
-        exec('npm install shelljs elementtree',  function (error, stdout, stderr) {
+
+        var block = true;
+        exec('npm install shelljs@0.2 elementtree', {cwd: __dirname}, function (error, stdout, stderr) {
+            block = false;
             if (error !== null) {
                 console.error('ERROR : running \'npm install\' is npm installed? ' + error);
                 console.error(stderr);
                 process.exit(error.code);
             }
-            process.chdir(cwd);
+            shell = require.resolve("shelljs");
         });
+        function wait() {
+            if (block)
+                setTimeout(wait, 1500);
+            else
+                create_project();
+        };
+        setTimeout(wait, 1500);
     }
-
-    // Check if project already exists
-    if(fs.existsSync(project_path)) {
-        console.error('Project already exists! Delete and recreate');
-        process.exit(2);
-    }
-    shell.mkdir(project_path);
-    shell.cp('-r', path.join(ROOT, '*'), path.join(project_path, 'build'));
-    shell.cp('-r', path.join(ROOT, 'bin/build/*'), path.join(project_path, 'cordova'));
-    shell.cp('-r', path.join(ROOT, 'xml/config.xml'), project_path);
-
-    shell.cd(project_path);
 }
 
 if(args.length < 3 || (args[2] == '--help' || args[2] == '/?' || args[2] == '-h' ||
@@ -68,5 +84,4 @@ if(args.length < 3 || (args[2] == '--help' || args[2] == '/?' || args[2] == '-h'
     help();
 } else {
     create(args[2], args[3], args[4], args[5]);
-    process.exit(0);
 }
