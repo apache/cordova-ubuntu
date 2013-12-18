@@ -23,26 +23,165 @@ var shell = require('shelljs');
 var path = require('path');
 var fs = require('fs');
 var assert = require('assert');
+var colors = require('colors');
 
-module.exports.build = function(root_dir, www_dir) {
-    var ubuntu_dir = path.join(root_dir, 'platforms', 'ubuntu');
-    var campo_dir = path.join(ubuntu_dir, 'build');
-    assert.ok(fs.existsSync(ubuntu_dir));
-    assert.ok(fs.existsSync(campo_dir));
+function exec(cmd) {
+    console.log(cmd.green);
 
-    shell.pushd(campo_dir);
+    var res = shell.exec(cmd);
+    if (res.code !== 0) {
+        console.error(cmd.green + " " + "FAILED".underline.red);
+        process.exit(1);
+    }
 
-    shell.exec('cmake . -DCMAKE_INSTALL_PREFIX=".."');
-    shell.exec('make -j 6; make install');
+    return res;
+}
 
+function cp(source, dest) {
+    console.log(('cp -Rf ' + source + ' ' + dest).green);
+
+    if (shell.cp('-r', source, dest) === null) {
+        console.error("FAILED".underline.red);
+        process.exit(1);
+    }
+}
+
+function pushd(dir) {
+    console.log(('pushd ' + dir).green);
+    shell.pushd(dir);
+}
+
+function popd(dir) {
+    console.log(('popd').green);
     shell.popd();
 }
 
-module.exports.run = function(root_dir, www_dir) {
-    var ubuntu_dir = path.join(root_dir, 'platforms', 'ubuntu');
+function buildArmPackage(campoDir, ubuntuDir) {
+    var armhfDir = path.join(ubuntuDir, 'armhf');
 
-    shell.pushd(ubuntu_dir);
-    shell.exec('./cordova-ubuntu www/');
+    shell.rm('-rf', path.join(armhfDir, 'build'));
 
-    shell.popd();
+    var prefixDir = path.join(armhfDir, 'prefix');
+    shell.rm('-rf', prefixDir);
+    shell.mkdir(path.join(armhfDir, 'build'));
+    shell.mkdir(prefixDir);
+
+    pushd(path.join(armhfDir, 'build'));
+
+    exec('click chroot -aarmhf -s trusty run cmake ' + campoDir + ' -DCMAKE_TOOLCHAIN_FILE=/etc/dpkg-cross/cmake/CMakeCross.txt -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"');
+    exec('find . -name AutomocInfo.cmake | xargs sed -i \'s;AM_QT_MOC_EXECUTABLE .*;AM_QT_MOC_EXECUTABLE "/usr/lib/\'$(dpkg-architecture -qDEB_BUILD_MULTIARCH)\'/qt5/bin/moc");\'');
+    exec('click chroot -aarmhf -s trusty run make -j 6');
+    exec('click chroot -aarmhf -s trusty run make install');
+    cp(path.join(ubuntuDir, 'www', '*'), path.join(prefixDir, 'www'));
+    cp(path.join(ubuntuDir, 'qml', '*'), path.join(prefixDir, 'qml'));
+    cp(path.join(ubuntuDir, 'apparmor.json'), prefixDir);
+    cp(path.join(ubuntuDir, 'cordova.desktop'), prefixDir);
+    cp(path.join(ubuntuDir, 'config.xml'), prefixDir);
+
+    var content = JSON.parse(fs.readFileSync(path.join(ubuntuDir, 'manifest.json'), {encoding: "utf8"}));
+    content.architecture = "armhf";
+    fs.writeFileSync(path.join(prefixDir, 'manifest.json'), JSON.stringify(content));
+
+    pushd(prefixDir);
+
+    exec('click build .');
+
+    popd();
+
+    popd();
+}
+
+function buildNative(campoDir, ubuntuDir) {
+    var nativeDir = path.join(ubuntuDir, 'native');
+    var prefixDir = path.join(nativeDir, 'prefix');
+
+    shell.rm('-rf', path.join(nativeDir, 'build'));
+    shell.rm('-rf', prefixDir);
+
+    shell.mkdir(path.join(nativeDir, 'build'));
+    shell.mkdir(prefixDir);
+
+    pushd(path.join(nativeDir, 'build'));
+
+    exec('cmake ' + campoDir + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"');
+    exec('make -j 6; make install');
+
+    cp(path.join(ubuntuDir, 'config.xml'), prefixDir);
+    cp(path.join(ubuntuDir, 'www', '*'), path.join(prefixDir, 'www'));
+    cp(path.join(ubuntuDir, 'qml', '*'), path.join(prefixDir, 'qml'));
+
+    popd();
+}
+
+module.exports.build = function(rootDir, wwwDir) {
+    var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
+    var campoDir = path.join(ubuntuDir, 'build');
+
+    assert.ok(fs.existsSync(ubuntuDir));
+    assert.ok(fs.existsSync(campoDir));
+
+    buildArmPackage(campoDir, ubuntuDir);
+    buildNative(campoDir, ubuntuDir);
+}
+
+function runNative(rootDir) {
+    var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
+    var nativeDir = path.join(ubuntuDir, 'native');
+
+    pushd(path.join(nativeDir, 'prefix'));
+    exec('./cordova-ubuntu www/');
+
+    popd();
+}
+
+function isDeviceAttached() {
+    var res = exec('adb get-state');
+
+    if (res.output.indexOf('device') == -1)
+        return false;
+
+    res = exec('adb shell uname -a');
+    if (res.output.indexOf('ubuntu-phablet') == -1)
+        return false;
+
+    return true;
+}
+
+function runOnDevice(rootDir) {
+    var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
+
+    if (!isDeviceAttached()) {
+        console.error('UbuntuTouch device is not attached'.red)
+        process.exit(1);
+    }
+
+    var armhfDir = path.join(ubuntuDir, 'armhf');
+    var prefixDir = path.join(armhfDir, 'prefix');
+
+    pushd(prefixDir);
+
+    var manifest = JSON.parse(fs.readFileSync(path.join(ubuntuDir, 'manifest.json'), {encoding: "utf8"}));
+    var appId = manifest.name;
+
+    var names = shell.ls().filter(function (name) {
+        return name.indexOf(appId) == 0 && name.indexOf('.click');
+    });
+
+    assert.ok(names.length == 1);
+
+    exec('adb push ' + names[0] + ' /home/phablet');
+    exec('adb shell "cd /home/phablet/; click install ' + names[0] + ' --user=phablet"');
+
+    exec('adb shell "su - phablet -c \'cd /opt/click.ubuntu.com/' + appId + '/current; ./cordova-ubuntu www/ --desktop_file_hint=/opt/click.ubuntu.com/' + appId + '/current/cordova.desktop\'"');
+
+    popd();
+
+    console.log('have fun!'.rainbow);
+}
+
+module.exports.run = function(rootDir, desktop) {
+    if (desktop)
+        runNative(rootDir);
+    else
+        runOnDevice(rootDir);
 }

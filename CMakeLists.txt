@@ -64,7 +64,6 @@ ADD_LIBRARY(cordovaubuntuplugin SHARED
 )
 qt5_use_modules(cordovaubuntuplugin Widgets Quick)
 
-
 #TODO use subprojects
 file(GLOB_RECURSE PLUGIN_SOURCES src/plugins/*.cpp)
 file(GLOB_RECURSE PLUGIN_HEADERS src/plugins/*.h)
@@ -77,8 +76,7 @@ ADD_LIBRARY(coreplugins SHARED
 )
 qt5_use_modules(coreplugins Widgets Location Sensors Feedback SystemInfo Contacts Multimedia Quick MultimediaWidgets)
 
-find_library(XCB_LIB xcb)
-target_link_libraries(cordova-ubuntu ${XCB_LIB} cordovaubuntuplugin)
+target_link_libraries(cordova-ubuntu cordovaubuntuplugin)
 target_link_libraries(coreplugins cordovaubuntuplugin)
 
 # Qt5's cmake does not export QT_IMPORTS_DIR, lets query qmake on our own for now

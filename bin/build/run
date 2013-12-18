@@ -25,5 +25,5 @@ var root = path.resolve();
 var www = path.join(root, 'www');
 
 platform.build(root, www);
-platform.run(root, www);
 
+platform.run(root, process.argv.indexOf('device') != -1);
