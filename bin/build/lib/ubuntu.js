@@ -124,12 +124,18 @@ module.exports.build = function(rootDir, wwwDir) {
     buildNative(campoDir, ubuntuDir);
 }
 
-function runNative(rootDir) {
+function runNative(rootDir, debug) {
     var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
     var nativeDir = path.join(ubuntuDir, 'native');
 
     pushd(path.join(nativeDir, 'prefix'));
-    exec('./cordova-ubuntu www/');
+
+    if (debug) {
+        console.error('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222');
+        exec('QTWEBKIT_INSPECTOR_SERVER=9222 ./cordova-ubuntu www/');
+    } else {
+        exec('./cordova-ubuntu www/');
+    }
 
     popd();
 }
@@ -147,7 +153,7 @@ function isDeviceAttached() {
     return true;
 }
 
-function runOnDevice(rootDir) {
+function runOnDevice(rootDir, debug) {
     var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
 
     if (!isDeviceAttached()) {
@@ -169,19 +175,30 @@ function runOnDevice(rootDir) {
 
     assert.ok(names.length == 1);
 
+    exec('adb shell "ps -A -eo pid,cmd | grep cordova-ubuntu | awk \'{ print \\$1 }\' | xargs kill -9"')
+
+    if (debug)
+        exec('adb forward --remove-all');
+
     exec('adb push ' + names[0] + ' /home/phablet');
     exec('adb shell "cd /home/phablet/; click install ' + names[0] + ' --user=phablet"');
 
-    exec('adb shell "su - phablet -c \'cd /opt/click.ubuntu.com/' + appId + '/current; ./cordova-ubuntu www/ --desktop_file_hint=/opt/click.ubuntu.com/' + appId + '/current/cordova.desktop\'"');
+    if (debug) {
+        console.error('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222');
+
+        exec('adb forward tcp:9222 tcp:9222');
+    }
+
+    exec('adb shell "su - phablet -c \'cd /opt/click.ubuntu.com/' + appId + '/current; QTWEBKIT_INSPECTOR_SERVER=9222 ./cordova-ubuntu www/ --desktop_file_hint=/opt/click.ubuntu.com/' + appId + '/current/cordova.desktop\'"');
 
     popd();
 
     console.log('have fun!'.rainbow);
 }
 
-module.exports.run = function(rootDir, desktop) {
+module.exports.run = function(rootDir, desktop, debug) {
     if (desktop)
-        runNative(rootDir);
+        runNative(rootDir, debug);
     else
-        runOnDevice(rootDir);
+        runOnDevice(rootDir, debug);
 }
