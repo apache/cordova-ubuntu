@@ -18,13 +18,7 @@
  * under the License.
  *
 */
-var path = require('path');
-var platform = require('./lib/ubuntu');
 
-var root = path.resolve();
-var www = path.join(root, 'www');
-
-var argv = require('optimist').boolean(['device', 'debug']).string(['target']).argv;
-
-platform.run(root, !argv.device, argv.debug, argv.target);
-
+module.exports = {
+    UBUNTU_TOUCH_DEVICE_NOT_AVALIABLE: 'UbuntuTouch device is not attached'
+};

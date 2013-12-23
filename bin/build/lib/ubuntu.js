@@ -22,6 +22,7 @@
 var shell = require('shelljs');
 var path = require('path');
 var fs = require('fs');
+var msg = require('./msg');
 var assert = require('assert');
 var colors = require('colors');
 
@@ -146,24 +147,44 @@ function runNative(rootDir, debug) {
     popd();
 }
 
-function isDeviceAttached() {
-    var res = exec('adb get-state');
+function deviceList() {
+    var res = exec('adb devices');
+
+    var response = res.output.split('\n');
+    var deviceList = [];
+
+    for (var i = 1; i < response.length; i++) {
+        if (response[i].match(/\w+\tdevice/)) {
+            deviceList.push(response[i].replace(/\tdevice/, '').replace('\r', ''));
+        }
+    }
+
+    return deviceList;
+}
+
+function adbExec(target, command) {
+    assert.ok(target && command);
+    return exec('adb -s ' + target + ' ' + command);
+}
+
+function isDeviceAttached(target) {
+    var res = adbExec(target, 'get-state');
 
     if (res.output.indexOf('device') == -1)
         return false;
 
-    res = exec('adb shell uname -a');
+    res = adbExec(target, 'shell uname -a');
     if (res.output.indexOf('ubuntu-phablet') == -1)
         return false;
 
     return true;
 }
 
-function runOnDevice(rootDir, debug) {
+function runOnDevice(rootDir, debug, target) {
     var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
 
-    if (!isDeviceAttached()) {
-        console.error('UbuntuTouch device is not attached'.red)
+    if (!isDeviceAttached(target)) {
+        console.error(msg.UBUNTU_TOUCH_DEVICE_NOT_AVALIABLE.red)
         process.exit(1);
     }
 
@@ -181,33 +202,49 @@ function runOnDevice(rootDir, debug) {
 
     assert.ok(names.length == 1);
 
-    exec('adb shell "ps -A -eo pid,cmd | grep cordova-ubuntu | awk \'{ print \\$1 }\' | xargs kill -9"')
+    adbExec(target, 'shell "ps -A -eo pid,cmd | grep cordova-ubuntu | awk \'{ print \\$1 }\' | xargs kill -9"')
 
     if (debug)
-        exec('adb forward --remove-all');
+        adbExec(target, 'forward --remove-all');
 
-    exec('adb push ' + names[0] + ' /home/phablet');
-    exec('adb shell "cd /home/phablet/; click install ' + names[0] + ' --user=phablet"');
+    adbExec(target, 'push ' + names[0] + ' /home/phablet');
+    adbExec(target, 'shell "cd /home/phablet/; click install ' + names[0] + ' --user=phablet"');
 
     if (debug) {
         console.error('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222');
 
-        exec('adb forward tcp:9222 tcp:9222');
+        adbExec(target, 'forward tcp:9222 tcp:9222');
     }
 
-    exec('adb shell "su - phablet -c \'cd /opt/click.ubuntu.com/' + appId + '/current; QTWEBKIT_INSPECTOR_SERVER=9222 ./cordova-ubuntu www/ --desktop_file_hint=/opt/click.ubuntu.com/' + appId + '/current/cordova.desktop\'"');
+    adbExec(target, 'shell "su - phablet -c \'cd /opt/click.ubuntu.com/' + appId + '/current; QTWEBKIT_INSPECTOR_SERVER=9222 ./cordova-ubuntu www/ --desktop_file_hint=/opt/click.ubuntu.com/' + appId + '/current/cordova.desktop\'"');
 
     popd();
 
     console.log('have fun!'.rainbow);
 }
 
-module.exports.run = function(rootDir, desktop, debug) {
+module.exports.run = function(rootDir, desktop, debug, target) {
     if (desktop) {
         module.exports.build(rootDir, module.exports.DESKTOP);
         runNative(rootDir, debug);
     } else {
+        if (!target) {
+            var devices = deviceList();
+
+            if (!devices.length) {
+                console.error(msg.UBUNTU_TOUCH_DEVICE_NOT_AVALIABLE.red)
+                process.exit(1);
+            }
+
+            target = devices[0];
+
+            if (devices.length > 1) {
+                console.warn('you can specify target with --target <device id>'.yellow);
+                console.warn(('running on ' + target).yellow);
+            }
+        }
+
         module.exports.build(rootDir, module.exports.PHONE);
-        runOnDevice(rootDir, debug);
+        runOnDevice(rootDir, debug, target);
     }
 }
