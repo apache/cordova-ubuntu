@@ -24,7 +24,7 @@ var platform = require('./lib/ubuntu');
 var root = path.resolve();
 var www = path.join(root, 'www');
 
-var argv = require('optimist').boolean(['device', 'debug']).string(['target']).argv;
+var argv = require('optimist').boolean(['device', 'debug', 'nobuild']).string(['target']).argv;
 
-platform.run(root, !argv.device, argv.debug, argv.target);
+platform.run(root, !argv.device, argv.debug, argv.target, argv.nobuild);
 

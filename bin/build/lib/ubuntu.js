@@ -57,12 +57,16 @@ function popd(dir) {
     shell.popd();
 }
 
-function buildArmPackage(campoDir, ubuntuDir) {
+function buildArmPackage(campoDir, ubuntuDir, nobuild) {
     var armhfDir = path.join(ubuntuDir, 'armhf');
+    var prefixDir = path.join(armhfDir, 'prefix');
+
+    if (nobuild && fs.existsSync(path.join(prefixDir, 'cordova-ubuntu'))) {
+        return;
+    }
 
     shell.rm('-rf', path.join(armhfDir, 'build'));
 
-    var prefixDir = path.join(armhfDir, 'prefix');
     shell.rm('-rf', prefixDir);
     shell.mkdir(path.join(armhfDir, 'build'));
     shell.mkdir(prefixDir);
@@ -92,9 +96,13 @@ function buildArmPackage(campoDir, ubuntuDir) {
     popd();
 }
 
-function buildNative(campoDir, ubuntuDir) {
+function buildNative(campoDir, ubuntuDir, nobuild) {
     var nativeDir = path.join(ubuntuDir, 'native');
     var prefixDir = path.join(nativeDir, 'prefix');
+
+    if (nobuild && fs.existsSync(path.join(prefixDir, 'cordova-ubuntu'))) {
+        return;
+    }
 
     shell.rm('-rf', path.join(nativeDir, 'build'));
     shell.rm('-rf', prefixDir);
@@ -118,7 +126,7 @@ module.exports.ALL = 2;
 module.exports.PHONE = 0;
 module.exports.DESKTOP = 1;
 
-module.exports.build = function(rootDir, target) {
+module.exports.build = function(rootDir, target, nobuild) {
     var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
     var campoDir = path.join(ubuntuDir, 'build');
 
@@ -126,9 +134,9 @@ module.exports.build = function(rootDir, target) {
     assert.ok(fs.existsSync(campoDir));
 
     if (target === module.exports.PHONE || target === module.exports.ALL)
-        buildArmPackage(campoDir, ubuntuDir);
+        buildArmPackage(campoDir, ubuntuDir, nobuild);
     if (target === module.exports.DESKTOP || target === module.exports.ALL)
-        buildNative(campoDir, ubuntuDir);
+        buildNative(campoDir, ubuntuDir, nobuild);
 }
 
 function runNative(rootDir, debug) {
@@ -223,9 +231,9 @@ function runOnDevice(rootDir, debug, target) {
     console.log('have fun!'.rainbow);
 }
 
-module.exports.run = function(rootDir, desktop, debug, target) {
+module.exports.run = function(rootDir, desktop, debug, target, nobuild) {
     if (desktop) {
-        module.exports.build(rootDir, module.exports.DESKTOP);
+        module.exports.build(rootDir, module.exports.DESKTOP, nobuild);
         runNative(rootDir, debug);
     } else {
         if (!target) {
@@ -244,7 +252,7 @@ module.exports.run = function(rootDir, desktop, debug, target) {
             }
         }
 
-        module.exports.build(rootDir, module.exports.PHONE);
+        module.exports.build(rootDir, module.exports.PHONE, nobuild);
         runOnDevice(rootDir, debug, target);
     }
 }
