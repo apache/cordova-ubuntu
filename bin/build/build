@@ -25,4 +25,4 @@ var platform = require('./lib/ubuntu');
 var root = path.resolve();
 var www = path.join(root, 'www');
 
-platform.build(root, www);
+platform.build(root, platform.ALL);

@@ -113,15 +113,21 @@ function buildNative(campoDir, ubuntuDir) {
     popd();
 }
 
-module.exports.build = function(rootDir, wwwDir) {
+module.exports.ALL = 2;
+module.exports.PHONE = 0;
+module.exports.DESKTOP = 1;
+
+module.exports.build = function(rootDir, target) {
     var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
     var campoDir = path.join(ubuntuDir, 'build');
 
     assert.ok(fs.existsSync(ubuntuDir));
     assert.ok(fs.existsSync(campoDir));
 
-    buildArmPackage(campoDir, ubuntuDir);
-    buildNative(campoDir, ubuntuDir);
+    if (target === module.exports.PHONE || target === module.exports.ALL)
+        buildArmPackage(campoDir, ubuntuDir);
+    if (target === module.exports.DESKTOP || target === module.exports.ALL)
+        buildNative(campoDir, ubuntuDir);
 }
 
 function runNative(rootDir, debug) {
@@ -197,8 +203,11 @@ function runOnDevice(rootDir, debug) {
 }
 
 module.exports.run = function(rootDir, desktop, debug) {
-    if (desktop)
+    if (desktop) {
+        module.exports.build(rootDir, module.exports.DESKTOP);
         runNative(rootDir, debug);
-    else
+    } else {
+        module.exports.build(rootDir, module.exports.PHONE);
         runOnDevice(rootDir, debug);
+    }
 }

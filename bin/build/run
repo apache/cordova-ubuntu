@@ -24,7 +24,5 @@ var platform = require('./lib/ubuntu');
 var root = path.resolve();
 var www = path.join(root, 'www');
 
-platform.build(root, www);
-
 platform.run(root, process.argv.indexOf('--device') == -1, process.argv.indexOf('--debug') != -1);
 
