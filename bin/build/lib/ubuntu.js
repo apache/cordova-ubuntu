@@ -120,6 +120,30 @@ function buildNative(campoDir, ubuntuDir, nobuild) {
     cp(path.join(ubuntuDir, 'qml', '*'), path.join(prefixDir, 'qml'));
 
     popd();
+
+    var manifest = JSON.parse(fs.readFileSync(path.join(ubuntuDir, 'manifest.json'), {encoding: "utf8"}));
+
+    assert(manifest.name.length);
+    assert(manifest.name.indexOf(' ') == -1);
+
+    var debDir = path.join(nativeDir, manifest.name);
+
+    shell.rm('-rf', debDir);
+    shell.mkdir('-p', path.join(debDir, 'opt', manifest.name));
+    cp(path.join(prefixDir, '*'), path.join(debDir, 'opt', manifest.name));
+
+    var destDir = path.join('/opt', manifest.name);
+    shell.mkdir('-p', path.join(debDir, 'usr', 'share', 'applications'));
+    shell.mkdir('-p', path.join(debDir, 'DEBIAN'));
+    fs.writeFileSync(path.join(debDir, 'DEBIAN', 'control'), 'Package: ' + manifest.name + '\nVersion: ' + manifest.version + '\nMaintainer: ' + manifest.maintainer + '\nArchitecture: ' + manifest.architecture + '\nDescription: ' + manifest.description + '\n')
+    fs.writeFileSync(path.join(debDir, 'usr', 'share', 'applications', manifest.name + '.desktop'), '[Desktop Entry]\nName=' + manifest.title + '\nExec=' + path.join(destDir, 'cordova-ubuntu') + ' ' + path.join(destDir, 'www') + '\nIcon=qmlscene\nTerminal=false\nType=Application\nX-Ubuntu-Touch=true\n');
+
+    pushd(nativeDir);
+
+    exec('dpkg-deb -b "' + manifest.name + '" .');
+    shell.rm('-rf', debDir);
+
+    popd();
 }
 
 module.exports.ALL = 2;
