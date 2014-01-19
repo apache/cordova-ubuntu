@@ -70,7 +70,7 @@ void Cordova::initPlugins() {
     for (QDir pluginsDir: searchPath) {
         for (const QString &fileName: pluginsDir.entryList(QDir::Files)) {
             QString path = pluginsDir.absoluteFilePath(fileName);
-            qDebug() << "Testing " << path;
+            qDebug() << "Testing" << path;
 
             if (!QLibrary::isLibrary(path))
                 continue;
@@ -84,7 +84,7 @@ void Cordova::initPlugins() {
             auto plugins = (*loader)(this);
 
             for (QSharedPointer<CPlugin> plugin: plugins) {
-              qCritical() << plugin->fullName();
+                qDebug() << "Enable plugin" << plugin->fullName();
                 emit pluginWantsToBeAdded(plugin->fullName(), plugin.data(), plugin->shortName());
             }
             m_plugins += plugins;
