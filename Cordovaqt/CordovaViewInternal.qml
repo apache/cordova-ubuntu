@@ -24,12 +24,17 @@ import Ubuntu.Components 0.1
 import Ubuntu.Components.Popups 0.1
 
 Item {
-    anchors.fill: parent
-    state: "main"
     id: root
+
+    anchors.fill: parent
+
+    state: "main"
     signal completed
+
     property string splashscreenPath
     property bool disallowOverscroll
+    property var mainWebview
+
     function exec(plugin, func, args) {
         CordovaWrapper.execMethod(plugin, func, args);
     }
@@ -79,6 +84,7 @@ Item {
             }
 
             Component.onCompleted: {
+                root.mainWebview = webView;
                 webView.url = cordova.mainUrl
             }
 

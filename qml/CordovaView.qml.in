@@ -24,6 +24,8 @@ Item {
     property string wwwDir
     property bool disallowOverscroll
 
+    property var mainWebview
+
     Cordova {
         id: cordova
         wwwDir: root.wwwDir
@@ -37,8 +39,11 @@ Item {
         asynchronous: true
         visible: false
         anchors.fill: parent
+
         onLoaded: {
+            root.mainWebview = loader.item.mainWebview
             cordova.parent = loader.item
+
             loader.item.completed.connect(function(){
                 loader.item.visible = true
                 loader.visible = true
