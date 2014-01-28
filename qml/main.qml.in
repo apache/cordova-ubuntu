@@ -24,4 +24,5 @@ CordovaView {
     height: 896
     wwwDir: www
     disallowOverscroll: !overscroll
+    contentFile: content
 }

@@ -22,11 +22,15 @@ import CordovaUbuntu @VERSION@
 Item {
     id: root
     property string wwwDir
+    property string contentFile
     property bool disallowOverscroll
+
+    property var mainWebview
 
     Cordova {
         id: cordova
         wwwDir: root.wwwDir
+        contentFile: root.contentFile
     }
     Image {
         id: splashscreen
@@ -37,8 +41,11 @@ Item {
         asynchronous: true
         visible: false
         anchors.fill: parent
+
         onLoaded: {
+            root.mainWebview = loader.item.mainWebview
             cordova.parent = loader.item
+
             loader.item.completed.connect(function(){
                 loader.item.visible = true
                 loader.visible = true

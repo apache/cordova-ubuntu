@@ -41,6 +41,8 @@ function create(project_path, package_name, project_name, project_template_dir) 
         }
         shell.mkdir(project_path);
         shell.cp('-r', path.join(ROOT, '*'), path.join(project_path, 'build'));
+        shell.mkdir(path.join(project_path, 'armhf'));
+        shell.mkdir(path.join(project_path, 'native'));
         shell.cp('-r', path.join(ROOT, 'bin/build/*'), path.join(project_path, 'cordova'));
 
         shell.cp('-r', path.join(ROOT, 'bin/node_modules'), path.join(project_path, 'cordova'));
@@ -53,6 +55,8 @@ function create(project_path, package_name, project_name, project_template_dir) 
     try {
         require.resolve("shelljs");
         require.resolve("elementtree");
+        require.resolve("colors");
+        require.resolve("optimist");
         create_project();
     } catch(e) {
         console.log('Shelljs module was not found, running \'npm install\'.....');
@@ -60,7 +64,7 @@ function create(project_path, package_name, project_name, project_template_dir) 
         var cwd = process.cwd();
 
         var block = true;
-        exec('npm install shelljs@0.2 elementtree', {cwd: __dirname}, function (error, stdout, stderr) {
+        exec('npm install', {cwd: __dirname}, function (error, stdout, stderr) {
             block = false;
             if (error !== null) {
                 console.error('ERROR : running \'npm install\' is npm installed? ' + error);

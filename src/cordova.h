@@ -31,7 +31,7 @@ class Cordova: public QObject {
     Q_PROPERTY(QString mainUrl READ mainUrl CONSTANT)
 
 public:
-    explicit Cordova(QDir wwwDir, QQuickItem *item, QObject *parent = nullptr);
+    explicit Cordova(QDir wwwDir, QString contentFile, QQuickItem *item, QObject *parent = nullptr);
 
     QString mainUrl() const;
     QObject *topLevelEventsReceiver();

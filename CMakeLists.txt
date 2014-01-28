@@ -20,7 +20,7 @@ configure_file (
   "${PROJECT_BINARY_DIR}/CordovaView.qml"
 )
 
-SET(CMAKE_CXX_FLAGS "-std=c++0x -Wall -Wextra -DCORDOVA_UBUNTU_VERSION=\\\"${VERSION}\\\" -DCORDOVA_UBUNTU_MAJOR_VERSION=${MAJOR_VERSION} -DCORDOVA_UBUNTU_MINOR_VERSION=${MINOR_VERSION} -I ${PROJECT_SOURCE_DIR}/src")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -fno-omit-frame-pointer -O2 -g -Wall -Wextra -DCORDOVA_UBUNTU_VERSION=\\\"${VERSION}\\\" -DCORDOVA_UBUNTU_MAJOR_VERSION=${MAJOR_VERSION} -DCORDOVA_UBUNTU_MINOR_VERSION=${MINOR_VERSION} -I ${PROJECT_SOURCE_DIR}/src")
 
 add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/qml
   COMMAND mkdir -p ${PROJECT_BINARY_DIR}/qml
@@ -64,7 +64,6 @@ ADD_LIBRARY(cordovaubuntuplugin SHARED
 )
 qt5_use_modules(cordovaubuntuplugin Widgets Quick)
 
-
 #TODO use subprojects
 file(GLOB_RECURSE PLUGIN_SOURCES src/plugins/*.cpp)
 file(GLOB_RECURSE PLUGIN_HEADERS src/plugins/*.h)
@@ -77,8 +76,7 @@ ADD_LIBRARY(coreplugins SHARED
 )
 qt5_use_modules(coreplugins Widgets Location Sensors Feedback SystemInfo Contacts Multimedia Quick MultimediaWidgets)
 
-find_library(XCB_LIB xcb)
-target_link_libraries(cordova-ubuntu ${XCB_LIB} cordovaubuntuplugin)
+target_link_libraries(cordova-ubuntu cordovaubuntuplugin)
 target_link_libraries(coreplugins cordovaubuntuplugin)
 
 # Qt5's cmake does not export QT_IMPORTS_DIR, lets query qmake on our own for now

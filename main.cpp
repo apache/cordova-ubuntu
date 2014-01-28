@@ -77,6 +77,7 @@ int main(int argc, char *argv[]) {
 
     bool fullscreen = false;
     bool disallowOverscroll = false;
+    QString content = "index.html";
     QDomNodeList preferences = config.documentElement().elementsByTagName("preference");
     for (int i = 0; i < preferences.size(); ++i) {
         QDomNode node = preferences.at(i);
@@ -90,8 +91,18 @@ int main(int argc, char *argv[]) {
             disallowOverscroll = value == "true";
     }
 
+    preferences = config.documentElement().elementsByTagName("content");
+    for (int i = 0; i < preferences.size(); ++i) {
+        QDomNode node = preferences.at(i);
+        QDomElement* element = static_cast<QDomElement*>(&node);
+
+        content = element->attribute("src");
+        break;
+    }
+
     view.setResizeMode(QQuickView::SizeRootObjectToView);
     view.rootContext()->setContextProperty("overscroll", !disallowOverscroll);
+    view.rootContext()->setContextProperty("content", content);
 
     view.setSource(QUrl(QString("%1/qml/main.qml").arg(workingDir.absolutePath())));
 
