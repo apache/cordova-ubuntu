@@ -22,6 +22,7 @@ import CordovaUbuntu @VERSION@
 Item {
     id: root
     property string wwwDir
+    property string contentFile
     property bool disallowOverscroll
 
     property var mainWebview
@@ -29,6 +30,7 @@ Item {
     Cordova {
         id: cordova
         wwwDir: root.wwwDir
+        contentFile: root.contentFile
     }
     Image {
         id: splashscreen

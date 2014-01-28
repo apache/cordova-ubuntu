@@ -24,9 +24,15 @@
 #include <QQuickItem>
 #include <QQmlContext>
 
-Cordova::Cordova(QDir wwwDir, QQuickItem *item, QObject *parent): QObject(parent), m_item(item), m_www(wwwDir) {
+Cordova::Cordova(QDir wwwDir, QString contentFile, QQuickItem *item, QObject *parent): QObject(parent), m_item(item), m_www(wwwDir) {
     qDebug() << "Using" << m_www.absolutePath() << "as working dir";
-    m_mainUrl = QUrl::fromUserInput(m_www.absoluteFilePath("index.html")).toString();
+
+    if (!m_www.exists(contentFile))
+        qCritical() << contentFile << "does not exists";
+
+    m_mainUrl = QUrl::fromUserInput(m_www.absoluteFilePath(contentFile)).toString();
+
+    qCritical() << QString(m_mainUrl);
 }
 
 QString Cordova::get_app_dir() {
