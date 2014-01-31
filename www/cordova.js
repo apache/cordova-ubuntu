@@ -1,5 +1,5 @@
 // Platform: ubuntu
-// 3.4.0-dev-7e39609
+// 3.5.0-dev-a9d8c4b
 /*
  Licensed to the Apache Software Foundation (ASF) under one
  or more contributor license agreements.  See the NOTICE file
@@ -19,7 +19,7 @@
  under the License.
 */
 ;(function() {
-var CORDOVA_JS_BUILD_LABEL = '3.4.0-dev-7e39609';
+var CORDOVA_JS_BUILD_LABEL = '3.5.0-dev-a9d8c4b';
 // file: src/scripts/require.js
 
 /*jshint -W079 */
