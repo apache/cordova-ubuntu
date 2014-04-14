@@ -57,6 +57,7 @@ function create(project_path, package_name, project_name, project_template_dir) 
         require.resolve("elementtree");
         require.resolve("colors");
         require.resolve("optimist");
+        require.resolve("q");
         create_project();
     } catch(e) {
         console.log('Shelljs module was not found, running \'npm install\'.....');
