@@ -79,6 +79,7 @@ function popd(dir) {
 function buildArmPackage(campoDir, ubuntuDir, nobuild) {
     var armhfDir = path.join(ubuntuDir, 'armhf');
     var prefixDir = path.join(armhfDir, 'prefix');
+    var framework = "ubuntu-sdk-13.10";
 
     if (nobuild && fs.existsSync(path.join(prefixDir, 'cordova-ubuntu'))) {
         return;
@@ -92,13 +93,13 @@ function buildArmPackage(campoDir, ubuntuDir, nobuild) {
 
     pushd(path.join(armhfDir, 'build'));
 
-    return execAsync('click chroot -aarmhf -s trusty run cmake ' + campoDir
+    return execAsync('click chroot -aarmhf -f ' + framework + ' run cmake ' + campoDir
               + ' -DCMAKE_TOOLCHAIN_FILE=/etc/dpkg-cross/cmake/CMakeCross.txt -DCMAKE_INSTALL_PREFIX="'
               + prefixDir + '"').then(function () {
         exec('find . -name AutomocInfo.cmake | xargs sed -i \'s;AM_QT_MOC_EXECUTABLE .*;AM_QT_MOC_EXECUTABLE "/usr/lib/\'$(dpkg-architecture -qDEB_BUILD_MULTIARCH)\'/qt5/bin/moc");\'');
-        return execAsync('click chroot -aarmhf -s trusty run make -j 6');
+        return execAsync('click chroot -aarmhf -f ' + framework + ' run make -j 6');
     }).then(function () {
-        return execAsync('click chroot -aarmhf -s trusty run make install');
+        return execAsync('click chroot -aarmhf -f ' + framework + ' run make install');
     }).then(function () {
         cp(path.join(ubuntuDir, 'www', '*'), path.join(prefixDir, 'www'));
         cp(path.join(ubuntuDir, 'qml', '*'), path.join(prefixDir, 'qml'));
