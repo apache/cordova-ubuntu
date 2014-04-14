@@ -82,7 +82,7 @@ function buildArmPackage(campoDir, ubuntuDir, nobuild) {
     var framework = "ubuntu-sdk-13.10";
 
     if (nobuild && fs.existsSync(path.join(prefixDir, 'cordova-ubuntu'))) {
-        return;
+        return Q();
     }
 
     shell.rm('-rf', path.join(armhfDir, 'build'));
@@ -126,7 +126,7 @@ function buildNative(campoDir, ubuntuDir, nobuild) {
     var prefixDir = path.join(nativeDir, 'prefix');
 
     if (nobuild && fs.existsSync(path.join(prefixDir, 'cordova-ubuntu'))) {
-        return;
+        return Q();
     }
 
     shell.rm('-rf', path.join(nativeDir, 'build'));
