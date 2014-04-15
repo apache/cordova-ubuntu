@@ -26,6 +26,7 @@ var msg = require('./msg');
 var assert = require('assert');
 var colors = require('colors');
 var Q = require("q");
+var os = require("os");
 
 function exec(cmd) {
     console.log(cmd.green);
@@ -76,6 +77,10 @@ function popd(dir) {
     shell.popd();
 }
 
+function cpuCount() {
+    return os.cpus().length;
+}
+
 function buildArmPackage(campoDir, ubuntuDir, nobuild) {
     var armhfDir = path.join(ubuntuDir, 'armhf');
     var prefixDir = path.join(armhfDir, 'prefix');
@@ -97,7 +102,7 @@ function buildArmPackage(campoDir, ubuntuDir, nobuild) {
               + ' -DCMAKE_TOOLCHAIN_FILE=/etc/dpkg-cross/cmake/CMakeCross.txt -DCMAKE_INSTALL_PREFIX="'
               + prefixDir + '"').then(function () {
         exec('find . -name AutomocInfo.cmake | xargs sed -i \'s;AM_QT_MOC_EXECUTABLE .*;AM_QT_MOC_EXECUTABLE "/usr/lib/\'$(dpkg-architecture -qDEB_BUILD_MULTIARCH)\'/qt5/bin/moc");\'');
-        return execAsync('click chroot -aarmhf -f ' + framework + ' run make -j 6');
+        return execAsync('click chroot -aarmhf -f ' + framework + ' run make -j ' + cpuCount());
     }).then(function () {
         return execAsync('click chroot -aarmhf -f ' + framework + ' run make install');
     }).then(function () {
@@ -137,8 +142,9 @@ function buildNative(campoDir, ubuntuDir, nobuild) {
 
     pushd(path.join(nativeDir, 'build'));
 
+    var debDir;
     return execAsync('cmake ' + campoDir + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"').then(function () {
-        return execAsync('make -j 6; make install');
+        return execAsync('make -j ' + cpuCount() + '; make install');
     }).then(function () {
         cp(path.join(ubuntuDir, 'config.xml'), prefixDir);
         cp(path.join(ubuntuDir, 'www', '*'), path.join(prefixDir, 'www'));
@@ -151,7 +157,7 @@ function buildNative(campoDir, ubuntuDir, nobuild) {
         assert(manifest.name.length);
         assert(manifest.name.indexOf(' ') == -1);
 
-        var debDir = path.join(nativeDir, manifest.name);
+        debDir = path.join(nativeDir, manifest.name);
 
         shell.rm('-rf', debDir);
         shell.mkdir('-p', path.join(debDir, 'opt', manifest.name));
