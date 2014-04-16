@@ -323,3 +323,8 @@ module.exports.run = function(rootDir, desktop, debug, target, nobuild) {
         });
     }
 }
+
+module.exports.check_reqs = function(rootDir) {
+    var checkReqs = path.join(rootDir, 'platforms', 'ubuntu', 'cordova', 'check_reqs');
+    return execAsync(checkReqs);
+}

@@ -44,6 +44,7 @@ function create(project_path, package_name, project_name, project_template_dir) 
         shell.mkdir(path.join(project_path, 'armhf'));
         shell.mkdir(path.join(project_path, 'native'));
         shell.cp('-r', path.join(ROOT, 'bin/build/*'), path.join(project_path, 'cordova'));
+        shell.cp('-r', path.join(ROOT, 'bin/check_reqs'), path.join(project_path, 'cordova'));
 
         shell.cp('-r', path.join(ROOT, 'bin/node_modules'), path.join(project_path, 'cordova'));
 

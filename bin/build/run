@@ -26,5 +26,7 @@ var www = path.join(root, 'www');
 
 var argv = require('optimist').boolean(['device', 'debug', 'nobuild']).string(['target']).argv;
 
-platform.run(root, !argv.device, argv.debug, argv.target, argv.nobuild).done();
+platform.check_reqs(root).then(function () {
+    return platform.run(root, !argv.device, argv.debug, argv.target, argv.nobuild);
+}).done();
 
