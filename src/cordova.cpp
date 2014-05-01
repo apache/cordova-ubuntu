@@ -24,19 +24,19 @@
 #include <QQuickItem>
 #include <QQmlContext>
 
-Cordova::Cordova(QDir wwwDir, QString contentFile, QQuickItem *item, QObject *parent): QObject(parent), m_item(item), m_www(wwwDir) {
-    qDebug() << "Using" << m_www.absolutePath() << "as working dir";
+Cordova::Cordova(QDir wwwDir, QString contentFile, QQuickItem *item, QObject *parent): QObject(parent), _item(item), _www(wwwDir) {
+    qDebug() << "Using" << _www.absolutePath() << "as working dir";
 
-    if (!m_www.exists(contentFile))
+    if (!_www.exists(contentFile))
         qCritical() << contentFile << "does not exists";
 
-    m_mainUrl = QUrl::fromUserInput(m_www.absoluteFilePath(contentFile)).toString();
+    _mainUrl = QUrl::fromUserInput(_www.absoluteFilePath(contentFile)).toString();
 
-    qCritical() << QString(m_mainUrl);
+    qCritical() << QString(_mainUrl);
 }
 
 QString Cordova::get_app_dir() {
-    return m_www.absolutePath();
+    return _www.absolutePath();
 }
 
 struct Splash {
@@ -45,7 +45,7 @@ struct Splash {
 };
 
 QString Cordova::getSplashscreenPath() {
-    double ratio = (double)m_item->width() / m_item->height();
+    double ratio = (double)_item->width() / _item->height();
 
     QDir dir(get_app_dir());
     if (!dir.cd("splashscreen"))
@@ -58,7 +58,7 @@ QString Cordova::getSplashscreenPath() {
             continue;
         Splash t;
         t.path = info.absoluteFilePath();
-        t.rating = std::abs((image.width() / (double)m_item->width()) * ((image.width() / image.height()) / ratio) - 1);
+        t.rating = std::abs((image.width() / (double)_item->width()) * ((image.width() / image.height()) / ratio) - 1);
         images.push_back(t);
     }
     std::min_element(images.begin(), images.end(), [](Splash &f, Splash &s) {
@@ -72,7 +72,7 @@ QString Cordova::getSplashscreenPath() {
 void Cordova::initPlugins() {
     QList<QDir> searchPath = {get_app_dir()};
 
-    m_plugins.clear();
+    _plugins.clear();
     for (QDir pluginsDir: searchPath) {
         for (const QString &fileName: pluginsDir.entryList(QDir::Files)) {
             QString path = pluginsDir.absoluteFilePath(fileName);
@@ -93,7 +93,7 @@ void Cordova::initPlugins() {
                 qDebug() << "Enable plugin" << plugin->fullName();
                 emit pluginWantsToBeAdded(plugin->fullName(), plugin.data(), plugin->shortName());
             }
-            m_plugins += plugins;
+            _plugins += plugins;
         }
     }
 }
@@ -113,35 +113,35 @@ void Cordova::execJS(const QString &js) {
 }
 
 QString Cordova::mainUrl() const {
-    return m_mainUrl;
+    return _mainUrl;
 }
 
 QObject *Cordova::topLevelEventsReceiver() {
-    return dynamic_cast<QQuickView*>(m_item->window());
+    return dynamic_cast<QQuickView*>(_item->window());
 }
 
 QQuickItem *Cordova::rootObject() {
-    return m_item->parentItem();
+    return _item->parentItem();
 }
 
 void Cordova::setTitle(const QString &title) {
-    dynamic_cast<QQuickView*>(m_item->window())->setTitle(title);
+    dynamic_cast<QQuickView*>(_item->window())->setTitle(title);
 }
 
 void Cordova::pushViewState(const QString &state) {
-    if (m_states.empty()) {
+    if (_states.empty()) {
         rootObject()->setState(state);
     }
-    m_states.push_front(state);
+    _states.push_front(state);
 }
 
 void Cordova::popViewState(const QString &state) {
-    if (!m_states.removeOne(state))
+    if (!_states.removeOne(state))
         qDebug() << "WARNING: incorrect view states order";
 
-    if (m_states.empty()) {
+    if (_states.empty()) {
         rootObject()->setState("main");
     } else {
-        rootObject()->setState(m_states.front());
+        rootObject()->setState(_states.front());
     }
 }
