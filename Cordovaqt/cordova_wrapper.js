@@ -21,6 +21,9 @@
 
 var pluginObjects = {}
 
+// qt 5.2 forbids assigning new properties to JS module
+// global variable used by plugins to store temporary data
+var global = {};
 
 function addPlugin(pluginName, pluginObject) {
     pluginObjects[pluginName] = pluginObject
