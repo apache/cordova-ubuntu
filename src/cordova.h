@@ -41,6 +41,17 @@ public:
     void pushViewState(const QString &state);
     void popViewState(const QString &state);
     QString getSplashscreenPath();
+
+    template<typename A>
+    QSharedPointer<CPlugin> getPlugin() {
+        for (QSharedPointer<CPlugin> &plugin: _plugins) {
+            if (plugin->fullName() != A::fullID())
+                continue;
+            return plugin;
+        }
+
+        return QSharedPointer<CPlugin>();
+    }
 signals:
     void javaScriptExecNeeded(const QString &js);
     void qmlExecNeeded(const QString &src);
@@ -53,16 +64,14 @@ public slots:
     void execQML(const QString &src);
 
 private:
-    int m_alertCallback;
-
     void initPlugins();
 
-    QQuickItem *m_item;
-    QList<QSharedPointer<CPlugin>> m_plugins;
+    QQuickItem *_item;
+    QList<QSharedPointer<CPlugin>> _plugins;
 
-    QDir m_www;
-    QString m_mainUrl;
-    QList<QString> m_states;
+    QDir _www;
+    QString _mainUrl;
+    QList<QString> _states;
     Q_DISABLE_COPY(Cordova)
 };
 

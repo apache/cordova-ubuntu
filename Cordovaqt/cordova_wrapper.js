@@ -21,13 +21,16 @@
 
 var pluginObjects = {}
 
+// qt 5.2 forbids assigning new properties to JS module
+// global variable used by plugins to store temporary data
+var global = {};
 
 function addPlugin(pluginName, pluginObject) {
     pluginObjects[pluginName] = pluginObject
 }
 
 function messageHandler(message) {
-    var received = JSON.parse(message.data);
+    var received = eval(message.data); // TODO: qt 5.2 have buggy JSON.parse. JSON.parse fails on FileApi tests
     if (typeof received === 'undefined')
         return false;
     if (typeof received.messageType === 'undefined')
