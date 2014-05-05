@@ -25,4 +25,6 @@ var platform = require('./lib/ubuntu');
 var root = path.resolve();
 var www = path.join(root, 'www');
 
-platform.build(root, platform.ALL);
+platform.check_reqs(root).then(function () {
+    return platform.build(root, platform.ALL);
+}).done();
