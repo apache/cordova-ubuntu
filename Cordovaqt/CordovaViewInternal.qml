@@ -42,6 +42,20 @@ Item {
         return CordovaWrapper.pluginObjects[plugin];
     }
 
+    function overrideScheme(schemeName, pluginName) {
+        var handler = Qt.createQmlObject("import QtWebKit.experimental 1.0;"
+            + "UrlSchemeDelegate { scheme: '" + schemeName + "';"
+            + "onReceivedRequest: { var data = plugin('" + pluginName + "').handleUri(request.url); reply.data = data; reply.contentType = 'application/octet-stream'; reply.send(); } } ", webView);
+
+        var handlers = [];
+        // QQmlListProperty (qt 5.2) does not support appending items from qml
+        for (var i in webView.experimental.urlSchemeDelegates)
+            handlers.push(webView.experimental.urlSchemeDelegates[i])
+
+        handlers.push(handler);
+        webView.experimental.urlSchemeDelegates = handlers;
+    }
+
     Rectangle {
         id: webViewContainer
         anchors.fill: parent
