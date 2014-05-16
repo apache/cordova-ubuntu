@@ -107,6 +107,8 @@ public:
 
     virtual const QString fullName() = 0;
     virtual const QString shortName() = 0;
+    virtual void onAppLoaded() {
+    }
 protected:
     Cordova *m_cordova;
 private:

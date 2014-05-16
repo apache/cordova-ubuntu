@@ -62,6 +62,7 @@ public slots:
     void execJS(const QString &js);
     void setTitle(const QString &title);
     void execQML(const QString &src);
+    void appLoaded();
 
 private:
     void initPlugins();

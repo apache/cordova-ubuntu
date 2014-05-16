@@ -88,6 +88,10 @@ public slots:
         }
         return _cordova->loadFinished(b);
     }
+    void appLoaded() {
+        assert(_cordova.data());
+        return _cordova->appLoaded();
+    }
 
 private:
     void initialize() {

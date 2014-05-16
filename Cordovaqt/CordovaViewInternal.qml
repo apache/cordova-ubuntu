@@ -85,7 +85,8 @@ Item {
 
             Component.onCompleted: {
                 root.mainWebview = webView;
-                webView.url = cordova.mainUrl
+                cordova.appLoaded();
+                webView.url = cordova.mainUrl;
             }
 
             onTitleChanged: {

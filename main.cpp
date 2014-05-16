@@ -103,7 +103,6 @@ int main(int argc, char *argv[]) {
     view.setResizeMode(QQuickView::SizeRootObjectToView);
     view.rootContext()->setContextProperty("overscroll", !disallowOverscroll);
     view.rootContext()->setContextProperty("content", content);
-
     view.setSource(QUrl(QString("%1/qml/main.qml").arg(workingDir.absolutePath())));
 
     if (fullscreen)

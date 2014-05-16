@@ -32,7 +32,14 @@ Cordova::Cordova(QDir wwwDir, QString contentFile, QQuickItem *item, QObject *pa
 
     _mainUrl = QUrl::fromUserInput(_www.absoluteFilePath(contentFile)).toString();
 
-    qCritical() << QString(_mainUrl);
+    qDebug() << _mainUrl;
+}
+
+void Cordova::appLoaded() {
+    initPlugins();
+    for (QSharedPointer<CPlugin> &plugin: _plugins) {
+        plugin->onAppLoaded();
+    }
 }
 
 QString Cordova::get_app_dir() {
