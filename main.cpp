@@ -20,6 +20,7 @@
 #include <QApplication>
 #include <QtQuick>
 #include <cassert>
+#include "src/Version.h"
 
 static void customMessageOutput(QtMsgType type, const QMessageLogContext &, const QString &msg) {
     switch (type) {
@@ -42,6 +43,7 @@ static void customMessageOutput(QtMsgType type, const QMessageLogContext &, cons
 
 int main(int argc, char *argv[]) {
     qInstallMessageHandler(customMessageOutput);
+    fprintf(stderr,"Apache Cordova native platform version %s is starting \n", CORDOVA_VERSION);
     QApplication app(argc, argv);
 
     //TODO: switch to options parser
