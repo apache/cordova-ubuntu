@@ -81,30 +81,37 @@ function cpuCount() {
     return os.cpus().length;
 }
 
-function buildArmPackage(campoDir, ubuntuDir, nobuild) {
-    var armhfDir = path.join(ubuntuDir, 'armhf');
-    var prefixDir = path.join(armhfDir, 'prefix');
+function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture) {
+    assert.ok(architecture && architecture.match(/^[a-z0-9_]+$/));
+
+    var archDir = path.join(ubuntuDir, architecture);
+    var prefixDir = path.join(archDir, 'prefix');
     var framework = "ubuntu-sdk-13.10";
+
+    if (!fs.existsSync(archDir))
+        shell.mkdir(archDir);
 
     if (nobuild && fs.existsSync(path.join(prefixDir, 'cordova-ubuntu'))) {
         return Q();
     }
 
-    shell.rm('-rf', path.join(armhfDir, 'build'));
+    shell.rm('-rf', path.join(archDir, 'build'));
 
     shell.rm('-rf', prefixDir);
-    shell.mkdir(path.join(armhfDir, 'build'));
+    shell.mkdir(path.join(archDir, 'build'));
     shell.mkdir(prefixDir);
 
-    pushd(path.join(armhfDir, 'build'));
+    pushd(path.join(archDir, 'build'));
 
-    return execAsync('click chroot -aarmhf -f ' + framework + ' run cmake ' + campoDir
+    return execAsync('click chroot -a' + architecture + ' -f ' + framework + ' run cmake ' + campoDir
               + ' -DCMAKE_TOOLCHAIN_FILE=/etc/dpkg-cross/cmake/CMakeCross.txt -DCMAKE_INSTALL_PREFIX="'
               + prefixDir + '"').then(function () {
-        exec('find . -name AutomocInfo.cmake | xargs sed -i \'s;AM_QT_MOC_EXECUTABLE .*;AM_QT_MOC_EXECUTABLE "/usr/lib/\'$(dpkg-architecture -qDEB_BUILD_MULTIARCH)\'/qt5/bin/moc");\'');
-        return execAsync('click chroot -aarmhf -f ' + framework + ' run make -j ' + cpuCount());
+
+        if (architecture != "i386")
+            exec('find . -name AutomocInfo.cmake | xargs sed -i \'s;AM_QT_MOC_EXECUTABLE .*;AM_QT_MOC_EXECUTABLE "/usr/lib/\'$(dpkg-architecture -qDEB_BUILD_MULTIARCH)\'/qt5/bin/moc");\'');
+        return execAsync('click chroot -a' + architecture + ' -f ' + framework + ' run make -j ' + cpuCount());
     }).then(function () {
-        return execAsync('click chroot -aarmhf -f ' + framework + ' run make install');
+        return execAsync('click chroot -a' + architecture + ' -f ' + framework + ' run make install');
     }).then(function () {
         cp(path.join(ubuntuDir, 'www', '*'), path.join(prefixDir, 'www'));
         cp(path.join(ubuntuDir, 'qml', '*'), path.join(prefixDir, 'qml'));
@@ -113,7 +120,7 @@ function buildArmPackage(campoDir, ubuntuDir, nobuild) {
         cp(path.join(ubuntuDir, 'config.xml'), prefixDir);
 
         var content = JSON.parse(fs.readFileSync(path.join(ubuntuDir, 'manifest.json'), {encoding: "utf8"}));
-        content.architecture = "armhf";
+        content.architecture = architecture;
         fs.writeFileSync(path.join(prefixDir, 'manifest.json'), JSON.stringify(content));
 
         pushd(prefixDir);
@@ -183,19 +190,22 @@ module.exports.ALL = 2;
 module.exports.PHONE = 0;
 module.exports.DESKTOP = 1;
 
-module.exports.build = function(rootDir, target, nobuild) {
+module.exports.build = function(rootDir, target, nobuild, architecture) {
     var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
     var campoDir = path.join(ubuntuDir, 'build');
+
+    if (!architecture)
+        architecture = 'armhf';
 
     assert.ok(fs.existsSync(ubuntuDir));
     assert.ok(fs.existsSync(campoDir));
 
     if (target === module.exports.PHONE)
-        return buildArmPackage(campoDir, ubuntuDir, nobuild);
+        return buildClickPackage(campoDir, ubuntuDir, nobuild, architecture);
     if (target === module.exports.DESKTOP)
         return buildNative(campoDir, ubuntuDir, nobuild);
     if (target === module.exports.ALL) {
-        return buildArmPackage(campoDir, ubuntuDir, nobuild).then(function () {
+        return buildClickPackage(campoDir, ubuntuDir, nobuild, architecture).then(function () {
             return buildNative(campoDir, ubuntuDir, nobuild);
         });
     }
@@ -253,7 +263,15 @@ function isDeviceAttached(target) {
     return true;
 }
 
-function runOnDevice(rootDir, debug, target) {
+function getDeviceArch(target) {
+    var out = adbExec(target, 'shell dpkg --print-architecture').output.split('\r\n');
+
+    assert.ok(out.length == 2 && out[0].indexOf(' ') == -1);
+
+    return out[0];
+}
+
+function runOnDevice(rootDir, debug, target, architecture) {
     var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
 
     if (!isDeviceAttached(target)) {
@@ -261,8 +279,8 @@ function runOnDevice(rootDir, debug, target) {
         process.exit(1);
     }
 
-    var armhfDir = path.join(ubuntuDir, 'armhf');
-    var prefixDir = path.join(armhfDir, 'prefix');
+    var archDir = path.join(ubuntuDir, architecture);
+    var prefixDir = path.join(archDir, 'prefix');
 
     pushd(prefixDir);
 
@@ -317,9 +335,10 @@ module.exports.run = function(rootDir, desktop, debug, target, nobuild) {
                 console.warn(('running on ' + target).yellow);
             }
         }
+        var arch = getDeviceArch(target);
 
-        return module.exports.build(rootDir, module.exports.PHONE, nobuild).then(function () {
-             return runOnDevice(rootDir, debug, target);
+        return module.exports.build(rootDir, module.exports.PHONE, nobuild, arch).then(function () {
+             return runOnDevice(rootDir, debug, target, arch);
         });
     }
 }
