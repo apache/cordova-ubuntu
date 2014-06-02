@@ -314,33 +314,43 @@ function runOnDevice(rootDir, debug, target, architecture) {
     });
 }
 
-module.exports.run = function(rootDir, desktop, debug, target, nobuild) {
-    if (desktop) {
+module.exports.run = function(rootDir, desktop, debug, target, nobuild, emulator) {
+    if (desktop && !emulator) {
         return module.exports.build(rootDir, module.exports.DESKTOP, nobuild).then(function () {
             return runNative(rootDir, debug);
         });
-    } else {
-        if (!target) {
-            var devices = deviceList();
+    }
 
+    if (!target) {
+        var devices = deviceList();
+
+        if (!devices.length) {
+            console.error(msg.UBUNTU_TOUCH_DEVICE_NOT_AVALIABLE.red)
+            process.exit(1);
+        }
+
+        if (emulator) {
+            devices = devices.filter(function (name) {
+                return name.match(/^emulator-/);
+            });
             if (!devices.length) {
-                console.error(msg.UBUNTU_TOUCH_DEVICE_NOT_AVALIABLE.red)
+                console.error(msg.EMULATOR_IS_NOT_RUNNING.red)
                 process.exit(1);
             }
-
-            target = devices[0];
-
-            if (devices.length > 1) {
-                console.warn('you can specify target with --target <device id>'.yellow);
-                console.warn(('running on ' + target).yellow);
-            }
         }
-        var arch = getDeviceArch(target);
 
-        return module.exports.build(rootDir, module.exports.PHONE, nobuild, arch).then(function () {
-             return runOnDevice(rootDir, debug, target, arch);
-        });
+        target = devices[0];
+
+        if (devices.length > 1) {
+            console.warn('you can specify target with --target <device id>'.yellow);
+            console.warn(('running on ' + target).yellow);
+        }
     }
+    var arch = getDeviceArch(target);
+
+    return module.exports.build(rootDir, module.exports.PHONE, nobuild, arch).then(function () {
+        return runOnDevice(rootDir, debug, target, arch);
+    });
 }
 
 module.exports.check_reqs = function(rootDir) {

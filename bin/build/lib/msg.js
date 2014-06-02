@@ -20,5 +20,6 @@
 */
 
 module.exports = {
-    UBUNTU_TOUCH_DEVICE_NOT_AVALIABLE: 'UbuntuTouch device is not attached'
+    UBUNTU_TOUCH_DEVICE_NOT_AVALIABLE: 'UbuntuTouch device is not attached',
+    EMULATOR_IS_NOT_RUNNING: 'UbuntuTouch emulator is not running'
 };
