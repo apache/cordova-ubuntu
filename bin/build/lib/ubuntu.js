@@ -81,15 +81,14 @@ function cpuCount() {
     return os.cpus().length;
 }
 
-function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture) {
+function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework) {
     assert.ok(architecture && architecture.match(/^[a-z0-9_]+$/));
 
-    var archDir = path.join(ubuntuDir, architecture);
+    var archDir = path.join(ubuntuDir, framework, architecture);
     var prefixDir = path.join(archDir, 'prefix');
-    var framework = "ubuntu-sdk-13.10";
 
     if (!fs.existsSync(archDir))
-        shell.mkdir(archDir);
+        shell.mkdir('-p', archDir);
 
     if (nobuild && fs.existsSync(path.join(prefixDir, 'cordova-ubuntu'))) {
         return Q();
@@ -121,6 +120,7 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture) {
 
         var content = JSON.parse(fs.readFileSync(path.join(ubuntuDir, 'manifest.json'), {encoding: "utf8"}));
         content.architecture = architecture;
+        content.framework = framework;
         fs.writeFileSync(path.join(prefixDir, 'manifest.json'), JSON.stringify(content));
 
         pushd(prefixDir);
@@ -190,22 +190,24 @@ module.exports.ALL = 2;
 module.exports.PHONE = 0;
 module.exports.DESKTOP = 1;
 
-module.exports.build = function(rootDir, target, nobuild, architecture) {
+module.exports.build = function(rootDir, target, nobuild, architecture, framework) {
     var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
     var campoDir = path.join(ubuntuDir, 'build');
 
     if (!architecture)
         architecture = 'armhf';
+    if (!framework)
+        framework = "ubuntu-sdk-13.10";
 
     assert.ok(fs.existsSync(ubuntuDir));
     assert.ok(fs.existsSync(campoDir));
 
     if (target === module.exports.PHONE)
-        return buildClickPackage(campoDir, ubuntuDir, nobuild, architecture);
+        return buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework);
     if (target === module.exports.DESKTOP)
         return buildNative(campoDir, ubuntuDir, nobuild);
     if (target === module.exports.ALL) {
-        return buildClickPackage(campoDir, ubuntuDir, nobuild, architecture).then(function () {
+        return buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework).then(function () {
             return buildNative(campoDir, ubuntuDir, nobuild);
         });
     }
@@ -271,7 +273,7 @@ function getDeviceArch(target) {
     return out[0];
 }
 
-function runOnDevice(rootDir, debug, target, architecture) {
+function runOnDevice(rootDir, debug, target, architecture, framework) {
     var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
 
     if (!isDeviceAttached(target)) {
@@ -279,7 +281,7 @@ function runOnDevice(rootDir, debug, target, architecture) {
         process.exit(1);
     }
 
-    var archDir = path.join(ubuntuDir, architecture);
+    var archDir = path.join(ubuntuDir, framework, architecture);
     var prefixDir = path.join(archDir, 'prefix');
 
     pushd(prefixDir);
@@ -314,12 +316,15 @@ function runOnDevice(rootDir, debug, target, architecture) {
     });
 }
 
-module.exports.run = function(rootDir, desktop, debug, target, nobuild, emulator) {
+module.exports.run = function(rootDir, desktop, debug, target, nobuild, emulator, framework) {
     if (desktop && !emulator) {
         return module.exports.build(rootDir, module.exports.DESKTOP, nobuild).then(function () {
             return runNative(rootDir, debug);
         });
     }
+
+    if (!framework)
+        framework = "ubuntu-sdk-13.10";
 
     if (!target) {
         var devices = deviceList();
@@ -348,8 +353,8 @@ module.exports.run = function(rootDir, desktop, debug, target, nobuild, emulator
     }
     var arch = getDeviceArch(target);
 
-    return module.exports.build(rootDir, module.exports.PHONE, nobuild, arch).then(function () {
-        return runOnDevice(rootDir, debug, target, arch);
+    return module.exports.build(rootDir, module.exports.PHONE, nobuild, arch, framework).then(function () {
+        return runOnDevice(rootDir, debug, target, arch, framework);
     });
 }
 
