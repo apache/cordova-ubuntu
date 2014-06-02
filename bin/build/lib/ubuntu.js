@@ -81,6 +81,22 @@ function cpuCount() {
     return os.cpus().length;
 }
 
+function checkChrootEnv(architecture, framework) {
+    var deps = "cmake libicu-dev:ARCH pkg-config qtbase5-dev:ARCH qtchooser qtdeclarative5-dev:ARCH qtfeedback5-dev:ARCH qtlocation5-dev:ARCH qtmultimedia5-dev:ARCH qtpim5-dev:ARCH qtsensors5-dev:ARCH qtsystems5-dev:ARCH";
+    deps = deps.replace(/ARCH/g, architecture);
+
+    var cmd = "click chroot -a" + architecture + " -f " + framework + " run dpkg-query -Wf'${db:Status-abbrev}' " + deps;
+    console.log(cmd.green);
+    res = shell.exec(cmd);
+
+    if (res.code !== 0 || res.output.indexOf('un') !== -1) {
+        console.error(("Error: missing " + architecture + " chroot").red);
+        console.error(("run:\nsudo click chroot -a" + architecture + " -f " + framework + " create").red);
+        console.error(("sudo click chroot -a" + architecture + " -f " + framework + " install " + deps).red);
+        process.exit(2);
+    }
+}
+
 function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework) {
     assert.ok(architecture && architecture.match(/^[a-z0-9_]+$/));
 
@@ -93,6 +109,8 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
     if (nobuild && fs.existsSync(path.join(prefixDir, 'cordova-ubuntu'))) {
         return Q();
     }
+
+    checkChrootEnv(architecture, framework);
 
     shell.rm('-rf', path.join(archDir, 'build'));
 

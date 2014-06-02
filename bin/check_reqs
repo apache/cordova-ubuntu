@@ -21,26 +21,12 @@
 
 var exec = require('child_process').exec;
 
-// FIXME: check for armhf
 var deps = "cmake libicu-dev pkg-config qtbase5-dev qtchooser qtdeclarative5-dev qtfeedback5-dev qtlocation5-dev qtmultimedia5-dev qtpim5-dev qtsensors5-dev qtsystems5-dev";
-var depsArm = "cmake libicu-dev:armhf pkg-config qtbase5-dev:armhf qtchooser qtdeclarative5-dev:armhf qtfeedback5-dev:armhf qtlocation5-dev:armhf qtmultimedia5-dev:armhf qtpim5-dev:armhf qtsensors5-dev:armhf qtsystems5-dev:armhf";
-var framework = "ubuntu-sdk-13.10";
 
-exec("dpkg-query -Wf'${db:Status-abbrev}\n' click " + deps, function(error, stdout, stderr) {
+exec("dpkg-query -Wf'${db:Status-abbrev}\\n' click " + deps, function(error, stdout, stderr) {
     if (error || stdout.indexOf('un') !== -1) {
         console.error("Error: missing dependency " + deps);
         process.exit(2);
     }
-
-    exec("click chroot -aarmhf -f " + framework + " run dpkg-query -Wf'${db:Status-abbrev}\n' " + deps, function(error, stdout, stderr) {
-        if (error || stdout.indexOf('un') !== -1) {
-            console.error("Error: missing armhf chroot");
-// to fix problem click chroot -aarmhf -f ubuntu-sdk-13.10 maint
-// dpkg --force-overwrite --force-conflicts -i /var/cache/apt/archives/qtbase5-dev_5.0.2+dfsg1-7ubuntu13_amd64.deb
-// apt-get install -f
-            console.error("run:\nsudo click chroot -aarmhf -f " + framework + " create\nsudo click chroot -aarmhf -f " + framework + " install " + depsArm);
-            process.exit(2);
-        }
-    })
 });
 
