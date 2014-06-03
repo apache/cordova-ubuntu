@@ -28,10 +28,10 @@ var colors = require('colors');
 var Q = require("q");
 var os = require("os");
 
-function exec(cmd) {
+function exec(cmd, silent) {
     console.log(cmd.green);
 
-    var res = shell.exec(cmd);
+    var res = shell.exec(cmd, { silent: silent });
     if (res.code !== 0) {
         console.error(cmd.green + " " + "FAILED".underline.red);
         process.exit(1);
@@ -97,6 +97,59 @@ function checkChrootEnv(architecture, framework) {
     }
 }
 
+function checkClickPackage(prefixDir) {
+    pushd(prefixDir);
+
+    // 13.10 missing click-reviewers-tools package
+    // FIXME: remove this check after EOL
+    if (fs.existsSync('/usr/bin/click-run-checks')) {
+        var cmd = '/usr/bin/click-run-checks *.click';
+        console.log(cmd.green);
+        var output = shell.exec(cmd, { silent: true }).output;
+        var json = '[', b = 0;
+        for (var i = 0; i < output.length; i++) {
+            if (output[i] == '{') {
+                if (json.length > 1 && !b)
+                    json += ', ';
+                b++;
+            } else if (output[i] == '}') {
+                b--;
+                if (b == 0)
+                    json += '} ';
+            }
+            if (b > 0) {
+                json += output[i];
+            }
+        }
+        json += ']';
+        var out = JSON.parse(json);
+        for (var i = 0; i < out.length; i++) {
+            if (out[i].warn) {
+                for (var m in out[i].warn) {
+                    if (out[i].warn[m].text) {
+                        console.warn(out[i].warn[m].text.yellow);
+                        if (out[i].warn[m].link)
+                            console.warn(out[i].warn[m].link);
+                    }
+                }
+            }
+        }
+        for (var i = 0; i < out.length; i++) {
+            if (out[i].error) {
+                for (var m in out[i].error) {
+                    if (out[i].error[m].text) {
+                        console.warn(out[i].error[m].text.yellow);
+                        if (out[i].error[m].link)
+                            console.warn(out[i].error[m].link);
+                    }
+                }
+            }
+        }
+    }
+
+    popd();
+}
+
 function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework) {
     assert.ok(architecture && architecture.match(/^[a-z0-9_]+$/));
 
@@ -145,6 +198,7 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
 
         return execAsync('click build .');
     }).then(function () {
+        checkClickPackage(prefixDir);
         popd();
 
         popd();
