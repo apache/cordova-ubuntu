@@ -173,10 +173,11 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
 
     pushd(path.join(archDir, 'build'));
 
-    return execAsync('click chroot -a' + architecture + ' -f ' + framework + ' run cmake ' + campoDir
-              + ' -DCMAKE_TOOLCHAIN_FILE=/etc/dpkg-cross/cmake/CMakeCross.txt -DCMAKE_INSTALL_PREFIX="'
-              + prefixDir + '"').then(function () {
-
+    var cmakeCmd = 'click chroot -a' + architecture + ' -f ' + framework + ' run cmake ' + campoDir
+              + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"';
+    if (framework == 'ubuntu-sdk-13.10')
+        cmakeCmd += ' -DCMAKE_TOOLCHAIN_FILE=/etc/dpkg-cross/cmake/CMakeCross.txt';
+    return execAsync(cmakeCmd).then(function () {
         if (architecture != "i386")
             exec('find . -name AutomocInfo.cmake | xargs sed -i \'s;AM_QT_MOC_EXECUTABLE .*;AM_QT_MOC_EXECUTABLE "/usr/lib/\'$(dpkg-architecture -qDEB_BUILD_MULTIARCH)\'/qt5/bin/moc");\'');
         return execAsync('click chroot -a' + architecture + ' -f ' + framework + ' run make -j ' + cpuCount());
