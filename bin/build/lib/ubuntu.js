@@ -150,7 +150,7 @@ function checkClickPackage(prefixDir) {
     popd();
 }
 
-function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework) {
+function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework, debug) {
     assert.ok(architecture && architecture.match(/^[a-z0-9_]+$/));
 
     var archDir = path.join(ubuntuDir, framework, architecture);
@@ -173,8 +173,12 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
 
     pushd(path.join(archDir, 'build'));
 
+    var buildType = '"Debug"';
+    if (!debug)
+        buildType = '"Release"';
+
     var cmakeCmd = 'click chroot -a' + architecture + ' -f ' + framework + ' run cmake ' + campoDir
-              + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"';
+              + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"' + ' -DCMAKE_BUILD_TYPE=' + buildType;
     if (framework == 'ubuntu-sdk-13.10')
         cmakeCmd += ' -DCMAKE_TOOLCHAIN_FILE=/etc/dpkg-cross/cmake/CMakeCross.txt';
     return execAsync(cmakeCmd).then(function () {
@@ -206,7 +210,7 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
     });
 }
 
-function buildNative(campoDir, ubuntuDir, nobuild) {
+function buildNative(campoDir, ubuntuDir, nobuild, debug) {
     var nativeDir = path.join(ubuntuDir, 'native');
     var prefixDir = path.join(nativeDir, 'prefix');
 
@@ -222,8 +226,13 @@ function buildNative(campoDir, ubuntuDir, nobuild) {
 
     pushd(path.join(nativeDir, 'build'));
 
+    var buildType = '"Debug"';
+    if (!debug)
+        buildType = '"Release"';
+
     var debDir;
-    return execAsync('cmake ' + campoDir + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"').then(function () {
+    return execAsync('cmake ' + campoDir + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"'
+                      + ' -DCMAKE_BUILD_TYPE=' + buildType).then(function () {
         return execAsync('make -j ' + cpuCount() + '; make install');
     }).then(function () {
         cp(path.join(ubuntuDir, 'config.xml'), prefixDir);
@@ -263,7 +272,7 @@ module.exports.ALL = 2;
 module.exports.PHONE = 0;
 module.exports.DESKTOP = 1;
 
-module.exports.build = function(rootDir, target, nobuild, architecture, framework) {
+module.exports.build = function(rootDir, target, nobuild, architecture, framework, debug) {
     var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
     var campoDir = path.join(ubuntuDir, 'build');
 
@@ -278,7 +287,7 @@ module.exports.build = function(rootDir, target, nobuild, architecture, framewor
     if (target === module.exports.PHONE)
         return buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework);
     if (target === module.exports.DESKTOP)
-        return buildNative(campoDir, ubuntuDir, nobuild);
+        return buildNative(campoDir, ubuntuDir, nobuild, debug);
     if (target === module.exports.ALL) {
         return buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework).then(function () {
             return buildNative(campoDir, ubuntuDir, nobuild);
@@ -292,10 +301,13 @@ function runNative(rootDir, debug) {
 
     pushd(path.join(nativeDir, 'prefix'));
 
-    if (debug)
-        console.error('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222');
+    var cmd = 'QTWEBKIT_INSPECTOR_SERVER=9222 ./cordova-ubuntu www/';
+    if (debug) {
+        cmd = "DEBUG=1 " + cmd;
+        console.error('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222'.yellow);
+    }
 
-    return execAsync('QTWEBKIT_INSPECTOR_SERVER=9222 ./cordova-ubuntu www/').then(function () {
+    return execAsync(cmd).then(function () {
         popd();
     });
 }
@@ -391,7 +403,7 @@ function runOnDevice(rootDir, debug, target, architecture, framework) {
 
 module.exports.run = function(rootDir, desktop, debug, target, nobuild, emulator, framework) {
     if (desktop && !emulator) {
-        return module.exports.build(rootDir, module.exports.DESKTOP, nobuild).then(function () {
+        return module.exports.build(rootDir, module.exports.DESKTOP, nobuild, null, null, debug).then(function () {
             return runNative(rootDir, debug);
         });
     }
@@ -426,7 +438,7 @@ module.exports.run = function(rootDir, desktop, debug, target, nobuild, emulator
     }
     var arch = getDeviceArch(target);
 
-    return module.exports.build(rootDir, module.exports.PHONE, nobuild, arch, framework).then(function () {
+    return module.exports.build(rootDir, module.exports.PHONE, nobuild, arch, framework, debug).then(function () {
         return runOnDevice(rootDir, debug, target, arch, framework);
     });
 }
