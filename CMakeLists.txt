@@ -53,6 +53,12 @@ add_custom_target(copy_wwwqmlxml DEPENDS ${PROJECT_BINARY_DIR}/CordovaUbuntu.${V
 
 find_package(Qt5Widgets)
 find_package(Qt5Core)
+find_package(PkgConfig)
+
+pkg_check_modules(PLUGIN_DEPS REQUIRED ${ADDITIONAL_DEPENDECIES})
+
+include_directories(${PLUGIN_DEPS_INCLUDE_DIRS})
+link_directories(${PLUGIN_DEPS_LIBRARY_DIRS})
 
 add_executable(cordova-ubuntu
   main.cpp
@@ -84,7 +90,7 @@ ADD_LIBRARY(coreplugins SHARED
 qt5_use_modules(coreplugins Widgets Location Sensors Feedback SystemInfo Contacts Multimedia Quick MultimediaWidgets)
 
 target_link_libraries(cordova-ubuntu cordovaubuntuplugin)
-target_link_libraries(coreplugins cordovaubuntuplugin)
+target_link_libraries(coreplugins cordovaubuntuplugin ${PLUGIN_DEPS_LIBRARIES})
 
 # Qt5's cmake does not export QT_IMPORTS_DIR, lets query qmake on our own for now
 get_target_property(QMAKE_EXECUTABLE Qt5::qmake LOCATION)

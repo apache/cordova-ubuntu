@@ -81,8 +81,25 @@ function cpuCount() {
     return os.cpus().length;
 }
 
-function checkChrootEnv(architecture, framework) {
-    var deps = "cmake libicu-dev:ARCH pkg-config qtbase5-dev:ARCH qtchooser qtdeclarative5-dev:ARCH qtfeedback5-dev:ARCH qtlocation5-dev:ARCH qtmultimedia5-dev:ARCH qtpim5-dev:ARCH qtsensors5-dev:ARCH qtsystems5-dev:ARCH";
+function additionalDependencies(ubuntuDir) {
+    var files = [];
+    try {
+        files = fs.readdirSync(path.join(ubuntuDir, 'configs')).filter(function(s) {
+            return s[0] != '.';
+        });
+    } catch (e) {}
+    var deb = [];
+    for (var i = 0; i < files.length; i++) {
+        var config = JSON.parse(fs.readFileSync(path.join(ubuntuDir, 'configs', files[i])));
+        if (config.deb)
+            deb = deb.concat(config.deb);
+    }
+    return deb;
+}
+
+function checkChrootEnv(ubuntuDir, architecture, framework) {
+    var deps = "cmake libicu-dev:ARCH pkg-config qtbase5-dev:ARCH qtchooser qtdeclarative5-dev:ARCH qtfeedback5-dev:ARCH qtlocation5-dev:ARCH qtmultimedia5-dev:ARCH qtpim5-dev:ARCH qtsensors5-dev:ARCH qtsystems5-dev:ARCH ";
+    deps += additionalDependencies(ubuntuDir).join(' ');
     deps = deps.replace(/ARCH/g, architecture);
 
     var cmd = "click chroot -a" + architecture + " -f " + framework + " run dpkg-query -Wf'${db:Status-abbrev}' " + deps;
@@ -93,6 +110,23 @@ function checkChrootEnv(architecture, framework) {
         console.error(("Error: missing " + architecture + " chroot").red);
         console.error(("run:\nsudo click chroot -a" + architecture + " -f " + framework + " create").red);
         console.error(("sudo click chroot -a" + architecture + " -f " + framework + " install " + deps).red);
+        process.exit(2);
+    }
+}
+
+function checkEnv(ubuntuDir) {
+    var deps = additionalDependencies(ubuntuDir).join(' ');
+    deps = deps.replace(/:ARCH/g, '');
+
+    if (!deps.length)
+        return;
+
+    var cmd = "dpkg-query -Wf'${db:Status-abbrev}' " + deps;
+    console.log(cmd.green);
+    res = shell.exec(cmd);
+
+    if (res.code !== 0 || res.output.indexOf('un') !== -1) {
+        console.error(("Error: missing packages" + deps).red);
         process.exit(2);
     }
 }
@@ -150,6 +184,24 @@ function checkClickPackage(prefixDir) {
     popd();
 }
 
+function additionalBuildDependencies(ubuntuDir) {
+    var files = [];
+    try {
+        files = fs.readdirSync(path.join(ubuntuDir, 'configs')).filter(function(s) {
+            return s[0] != '.';
+        });
+    } catch (e) {}
+
+    var pkgConfig = [];
+    for (var i = 0; i < files.length; i++) {
+        var config = JSON.parse(fs.readFileSync(path.join(ubuntuDir, 'configs', files[i])));
+        if (config.pkgConfig)
+            pkgConfig = pkgConfig.concat(config.pkgConfig);
+    }
+
+    return pkgConfig;
+}
+
 function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework, debug) {
     assert.ok(architecture && architecture.match(/^[a-z0-9_]+$/));
 
@@ -163,7 +215,7 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
         return Q();
     }
 
-    checkChrootEnv(architecture, framework);
+    checkChrootEnv(ubuntuDir, architecture, framework);
 
     shell.rm('-rf', path.join(archDir, 'build'));
 
@@ -179,8 +231,15 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
 
     var cmakeCmd = 'click chroot -a' + architecture + ' -f ' + framework + ' run cmake ' + campoDir
               + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"' + ' -DCMAKE_BUILD_TYPE=' + buildType;
+
+
     if (framework == 'ubuntu-sdk-13.10')
         cmakeCmd += ' -DCMAKE_TOOLCHAIN_FILE=/etc/dpkg-cross/cmake/CMakeCross.txt';
+
+    var deps = additionalBuildDependencies(ubuntuDir).join(' ').replace(/ARCH/g, architecture);
+    if (deps.length)
+        cmakeCmd += ' -DADDITIONAL_DEPENDECIES="' + deps + '"';
+
     return execAsync(cmakeCmd).then(function () {
         if (architecture != "i386")
             exec('find . -name AutomocInfo.cmake | xargs sed -i \'s;AM_QT_MOC_EXECUTABLE .*;AM_QT_MOC_EXECUTABLE "/usr/lib/\'$(dpkg-architecture -qDEB_BUILD_MULTIARCH)\'/qt5/bin/moc");\'');
@@ -218,6 +277,8 @@ function buildNative(campoDir, ubuntuDir, nobuild, debug) {
         return Q();
     }
 
+    checkEnv(ubuntuDir);
+
     shell.rm('-rf', path.join(nativeDir, 'build'));
     shell.rm('-rf', prefixDir);
 
@@ -230,9 +291,15 @@ function buildNative(campoDir, ubuntuDir, nobuild, debug) {
     if (!debug)
         buildType = '"Release"';
 
+    var cmakeCmd = 'cmake ' + campoDir + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"'
+        + ' -DCMAKE_BUILD_TYPE=' + buildType;
+
+    var deps = additionalBuildDependencies(ubuntuDir).join(' ').replace(/ARCH/g, '');
+    if (deps.length)
+        cmakeCmd += ' -DADDITIONAL_DEPENDECIES="' + deps + '"';
+
     var debDir;
-    return execAsync('cmake ' + campoDir + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"'
-                      + ' -DCMAKE_BUILD_TYPE=' + buildType).then(function () {
+    return execAsync(cmakeCmd).then(function () {
         return execAsync('make -j ' + cpuCount() + '; make install');
     }).then(function () {
         cp(path.join(ubuntuDir, 'config.xml'), prefixDir);
