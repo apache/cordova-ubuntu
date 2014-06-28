@@ -234,7 +234,6 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
     var cmakeCmd = 'click chroot -a' + architecture + ' -f ' + framework + ' run cmake ' + campoDir
               + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"' + ' -DCMAKE_BUILD_TYPE=' + buildType;
 
-
     if (framework == 'ubuntu-sdk-13.10')
         cmakeCmd += ' -DCMAKE_TOOLCHAIN_FILE=/etc/dpkg-cross/cmake/CMakeCross.txt';
 
@@ -354,11 +353,11 @@ module.exports.build = function(rootDir, target, nobuild, architecture, framewor
     assert.ok(fs.existsSync(campoDir));
 
     if (target === module.exports.PHONE)
-        return buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework);
+        return buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework, debug);
     if (target === module.exports.DESKTOP)
         return buildNative(campoDir, ubuntuDir, nobuild, debug);
     if (target === module.exports.ALL) {
-        return buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework).then(function () {
+        return buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework, debug).then(function () {
             return buildNative(campoDir, ubuntuDir, nobuild);
         });
     }
