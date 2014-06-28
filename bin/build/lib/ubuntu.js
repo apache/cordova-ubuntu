@@ -28,6 +28,8 @@ var colors = require('colors');
 var Q = require("q");
 var os = require("os");
 
+var DEFAULT_FRAMEWORK = "ubuntu-sdk-14.04";
+
 function exec(cmd, silent) {
     console.log(cmd.green);
 
@@ -346,7 +348,7 @@ module.exports.build = function(rootDir, target, nobuild, architecture, framewor
     if (!architecture)
         architecture = 'armhf';
     if (!framework)
-        framework = "ubuntu-sdk-13.10";
+        framework = DEFAULT_FRAMEWORK;
 
     assert.ok(fs.existsSync(ubuntuDir));
     assert.ok(fs.existsSync(campoDir));
@@ -476,7 +478,7 @@ module.exports.run = function(rootDir, desktop, debug, target, nobuild, emulator
     }
 
     if (!framework)
-        framework = "ubuntu-sdk-13.10";
+        framework = DEFAULT_FRAMEWORK;
 
     if (!target) {
         var devices = deviceList();

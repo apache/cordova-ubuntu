@@ -121,7 +121,6 @@ Item {
                     webView.experimental.evaluateJavaScript(js);
                 }
                 onQmlExecNeeded: {
-                    console.log("2345");
                     eval(src);
                 }
                 onPluginWantsToBeAdded: {
