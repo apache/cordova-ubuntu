@@ -250,7 +250,6 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
     }).then(function () {
         cp(path.join(ubuntuDir, 'www', '*'), path.join(prefixDir, 'www'));
         cp(path.join(ubuntuDir, 'qml', '*'), path.join(prefixDir, 'qml'));
-        cp(path.join(ubuntuDir, 'apparmor.json'), prefixDir);
         cp(path.join(ubuntuDir, 'cordova.desktop'), prefixDir);
         cp(path.join(ubuntuDir, 'config.xml'), prefixDir);
 
@@ -258,6 +257,13 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
         content.architecture = architecture;
         content.framework = framework;
         fs.writeFileSync(path.join(prefixDir, 'manifest.json'), JSON.stringify(content));
+
+        content = JSON.parse(fs.readFileSync(path.join(ubuntuDir, 'apparmor.json'), {encoding: "utf8"}));
+        if (framework == 'ubuntu-sdk-13.10')
+            content.policy_version = 1;
+        else
+            content.policy_version = 1.1;
+        fs.writeFileSync(path.join(prefixDir, 'apparmor.json'), JSON.stringify(content));
 
         pushd(prefixDir);
 
