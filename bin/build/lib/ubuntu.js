@@ -286,7 +286,6 @@ function buildNative(campoDir, ubuntuDir, nobuild, debug) {
 
     checkEnv(ubuntuDir);
 
-    shell.rm('-rf', path.join(nativeDir, 'build'));
     shell.rm('-rf', prefixDir);
 
     shell.mkdir(path.join(nativeDir, 'build'));
