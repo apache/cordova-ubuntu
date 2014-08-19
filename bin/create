@@ -49,6 +49,9 @@ function create(project_path, package_name, project_name, project_template_dir) 
 
         shell.cp('-r', path.join(ROOT, 'xml/config.xml'), project_path);
 
+        shell.mkdir(path.join(project_path, 'www'));
+        shell.cp(path.join(ROOT, 'www/cordova.js'), path.join(project_path, 'www'));
+
         shell.cd(project_path);
     }
 
