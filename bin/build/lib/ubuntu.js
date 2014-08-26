@@ -288,7 +288,7 @@ function buildNative(campoDir, ubuntuDir, nobuild, debug) {
 
     shell.rm('-rf', prefixDir);
 
-    shell.mkdir(path.join(nativeDir, 'build'));
+    shell.mkdir('-p', path.join(nativeDir, 'build'));
     shell.mkdir(prefixDir);
 
     pushd(path.join(nativeDir, 'build'));
