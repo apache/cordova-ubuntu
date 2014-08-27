@@ -1,17 +1,17 @@
 {
-  "name": "cordova-ubuntu",
-  "version": "3.5.0",
-  "description": "cordova-ubuntu release",
-  "main": "bin/create",
-  "repository": {
-    "type": "git",
-    "url": "https://git-wip-us.apache.org/repos/asf/cordova-ubuntu.git"
-  },
-  "keywords": [
-    "ubuntu",
-    "cordova",
-    "apache"
-  ],
-  "author": "Apache Software Foundation",
-  "license": "Apache Version 2.0"
+    "name": "cordova-ubuntu",
+    "version": "3.6.0",
+    "description": "cordova-ubuntu release",
+    "main": "bin/create",
+    "repository": {
+        "type": "git",
+        "url": "https://git-wip-us.apache.org/repos/asf/cordova-ubuntu.git"
+    },
+    "keywords": [
+        "ubuntu",
+        "cordova",
+        "apache"
+    ],
+    "author": "Apache Software Foundation",
+    "license": "Apache Version 2.0"
 }
