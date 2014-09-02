@@ -336,9 +336,16 @@ function buildNative(campoDir, ubuntuDir, nobuild, debug) {
         }
 
 
+        var debControlContent = 'Package: ' + manifest.name
+            + '\nVersion: ' + manifest.version
+            + '\nMaintainer: ' + manifest.maintainer
+            + '\nArchitecture: ' + manifest.architecture
+            + '\nDescription: ' + manifest.description
+            + '\nDepends: ubuntu-sdk-libs\n';
+
         shell.mkdir('-p', path.join(debDir, 'usr', 'share', 'applications'));
         shell.mkdir('-p', path.join(debDir, 'DEBIAN'));
-        fs.writeFileSync(path.join(debDir, 'DEBIAN', 'control'), 'Package: ' + manifest.name + '\nVersion: ' + manifest.version + '\nMaintainer: ' + manifest.maintainer + '\nArchitecture: ' + manifest.architecture + '\nDescription: ' + manifest.description + '\n')
+        fs.writeFileSync(path.join(debDir, 'DEBIAN', 'control'), debControlContent);
         fs.writeFileSync(path.join(debDir, 'usr', 'share', 'applications', manifest.name + '.desktop'), desktopFileContent);
 
         pushd(nativeDir);
