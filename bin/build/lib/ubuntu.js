@@ -100,7 +100,7 @@ function additionalDependencies(ubuntuDir) {
 }
 
 function checkChrootEnv(ubuntuDir, architecture, framework) {
-    var deps = "cmake libicu-dev:ARCH pkg-config qtbase5-dev:ARCH qtchooser qtdeclarative5-dev:ARCH qtfeedback5-dev:ARCH qtlocation5-dev:ARCH qtmultimedia5-dev:ARCH qtpim5-dev:ARCH qtsensors5-dev:ARCH qtsystems5-dev:ARCH ";
+    var deps = "cmake libicu-dev:ARCH pkg-config qtbase5-dev:ARCH qtchooser qtdeclarative5-dev:ARCH qtfeedback5-dev:ARCH qtlocation5-dev:ARCH qtmultimedia5-dev:ARCH qtpim5-dev:ARCH libqt5sensors5-dev:ARCH qtsystems5-dev:ARCH ";
     deps += additionalDependencies(ubuntuDir).join(' ');
     deps = deps.replace(/ARCH/g, architecture);
 
@@ -326,10 +326,20 @@ function buildNative(campoDir, ubuntuDir, nobuild, debug) {
         cp(path.join(prefixDir, '*'), path.join(debDir, 'opt', manifest.name));
 
         var destDir = path.join('/opt', manifest.name);
+        var icon = fs.readFileSync(path.join(ubuntuDir, 'cordova.desktop'), {encoding: "utf8"}).match(/^Icon=(.+)$/m);
+        var desktopFileContent = '[Desktop Entry]\nName=' + manifest.title + '\nExec=' + path.join(destDir, 'cordova-ubuntu') + ' ' + path.join(destDir, 'www') + '\nTerminal=false\nType=Application\nX-Ubuntu-Touch=true\n';
+        if (icon) {
+            icon = icon[1];
+            desktopFileContent += 'Icon=' + path.join(destDir, icon) + '\n';
+        } else {
+            desktopFileContent += 'Icon=qmlscene\n';
+        }
+
+
         shell.mkdir('-p', path.join(debDir, 'usr', 'share', 'applications'));
         shell.mkdir('-p', path.join(debDir, 'DEBIAN'));
         fs.writeFileSync(path.join(debDir, 'DEBIAN', 'control'), 'Package: ' + manifest.name + '\nVersion: ' + manifest.version + '\nMaintainer: ' + manifest.maintainer + '\nArchitecture: ' + manifest.architecture + '\nDescription: ' + manifest.description + '\n')
-        fs.writeFileSync(path.join(debDir, 'usr', 'share', 'applications', manifest.name + '.desktop'), '[Desktop Entry]\nName=' + manifest.title + '\nExec=' + path.join(destDir, 'cordova-ubuntu') + ' ' + path.join(destDir, 'www') + '\nIcon=qmlscene\nTerminal=false\nType=Application\nX-Ubuntu-Touch=true\n');
+        fs.writeFileSync(path.join(debDir, 'usr', 'share', 'applications', manifest.name + '.desktop'), desktopFileContent);
 
         pushd(nativeDir);
 
