@@ -276,6 +276,15 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
     });
 }
 
+function fillTemplate(source, dest, obj) {
+    var content = fs.readFileSync(source, {encoding: "utf8"});
+    for (var prop in obj) {
+        content = content.replace(new RegExp('{' + prop + '}', 'g'), obj[prop])
+    }
+
+    fs.writeFileSync(dest, content);
+}
+
 function buildNative(campoDir, ubuntuDir, nobuild, debug) {
     var nativeDir = path.join(ubuntuDir, 'native');
     var prefixDir = path.join(nativeDir, 'prefix');
@@ -322,39 +331,44 @@ function buildNative(campoDir, ubuntuDir, nobuild, debug) {
         debDir = path.join(nativeDir, manifest.name);
 
         shell.rm('-rf', debDir);
-        shell.mkdir('-p', path.join(debDir, 'opt', manifest.name));
-        cp(path.join(prefixDir, '*'), path.join(debDir, 'opt', manifest.name));
+
+        shell.mkdir('-p', path.join(debDir, 'debian'));
+        cp(path.join(campoDir, '*'), debDir);
+
+        cp(path.join(ubuntuDir, 'config.xml'), path.join(debDir, 'debian'));
+        cp(path.join(ubuntuDir, 'www', '*'), path.join(debDir, 'www'));
+        cp(path.join(ubuntuDir, 'qml', '*'), path.join(debDir, 'qml'));
 
         var destDir = path.join('/opt', manifest.name);
+
         var icon = fs.readFileSync(path.join(ubuntuDir, 'cordova.desktop'), {encoding: "utf8"}).match(/^Icon=(.+)$/m);
-        var desktopFileContent = '[Desktop Entry]\nName=' + manifest.title + '\nExec=' + path.join(destDir, 'cordova-ubuntu') + ' ' + path.join(destDir, 'www') + '\nTerminal=false\nType=Application\nX-Ubuntu-Touch=true\n';
-        if (icon) {
-            icon = icon[1];
-            desktopFileContent += 'Icon=' + path.join(destDir, icon) + '\n';
-        } else {
-            desktopFileContent += 'Icon=qmlscene\n';
+        icon = icon ? '/opt/' + manifest.name + '/' + icon[1] : 'qmlscene';
+
+        var maintainerEmail = manifest.maintainer.match('<.+>$');
+        maintainerEmail = maintainerEmail?maintainerEmail[0]:'';
+        var maintainerName = manifest.maintainer.replace(maintainerEmail, '').trim();
+        maintainerEmail = maintainerEmail.replace('<', '').replace('>', '');
+
+        var props = { PACKAGE_NAME: manifest.name,
+                      PACKAGE_TITLE: manifest.title,
+                      PACKAGE_VERSION: manifest.version,
+                      MAINTAINER_NAME: maintainerName,
+                      MAINTAINER_EMAIL: maintainerEmail,
+                      PACKAGE_DESCRIPTION: manifest.description,
+                      PACKAGE_ICON: icon };
+        var templateDir = path.join(campoDir, 'bin', 'build', 'lib', 'templates');
+        var templates = [{source: path.join(templateDir, 'changelog'), dest: path.join(debDir, 'debian', 'changelog')},
+                         {source: path.join(templateDir, 'compat'), dest: path.join(debDir, 'debian', 'compat')},
+                         {source: path.join(templateDir, 'control'), dest: path.join(debDir, 'debian', 'control')},
+                         {source: path.join(templateDir, 'rules'), dest: path.join(debDir, 'debian', 'rules')},
+                         {source: path.join(templateDir, 'cordova.desktop'), dest: path.join(debDir, 'debian', 'cordova.desktop')},
+                         {source: path.join(templateDir, 'install'), dest: path.join(debDir, 'debian', manifest.name + '.install')}];
+        for (var i = 0; i < templates.length; i++) {
+            fillTemplate(templates[i].source, templates[i].dest, props);
         }
 
-
-        var debControlContent = 'Package: ' + manifest.name
-            + '\nVersion: ' + manifest.version
-            + '\nMaintainer: ' + manifest.maintainer
-            + '\nArchitecture: ' + manifest.architecture
-            + '\nDescription: ' + manifest.description
-            + '\nDepends: ubuntu-sdk-libs\n';
-
-        shell.mkdir('-p', path.join(debDir, 'usr', 'share', 'applications'));
-        shell.mkdir('-p', path.join(debDir, 'DEBIAN'));
-        fs.writeFileSync(path.join(debDir, 'DEBIAN', 'control'), debControlContent);
-        fs.writeFileSync(path.join(debDir, 'usr', 'share', 'applications', manifest.name + '.desktop'), desktopFileContent);
-
-        pushd(nativeDir);
-
-        return execAsync('dpkg-deb -b "' + manifest.name + '" .');
-    }).then(function () {
-        shell.rm('-rf', debDir);
-
-        popd();
+        console.error('In order to build debian package, execute'.yellow);
+        console.error(('cd ' + debDir + '; ' + 'debuild').yellow);
     });
 }
 
