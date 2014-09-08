@@ -455,7 +455,7 @@ function isDeviceAttached(target) {
 }
 
 function getDeviceArch(target) {
-    var out = adbExec(target, 'shell dpkg --print-architecture').output.split('\r\n');
+    var out = adbExec(target, 'shell "dpkg --print-architecture 2>/dev/null"').output.split('\r\n');
 
     assert.ok(out.length == 2 && out[0].indexOf(' ') == -1);
 
@@ -490,7 +490,7 @@ function runOnDevice(rootDir, debug, target, architecture, framework) {
         adbExec(target, 'forward --remove-all');
 
     adbExec(target, 'push ' + names[0] + ' /home/phablet');
-    adbExec(target, 'shell "cd /home/phablet/; click install ' + names[0] + ' --user=phablet"');
+    adbExec(target, 'shell "cd /home/phablet/; pkcon install-local ' + names[0] + ' -p"');
 
     if (debug) {
         console.error('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222');
@@ -500,7 +500,7 @@ function runOnDevice(rootDir, debug, target, architecture, framework) {
 
     console.log('have fun!'.rainbow);
 
-    return adbExecAsync(target, 'shell "su - phablet -c \'cd /opt/click.ubuntu.com/' + appId + '/current; QTWEBKIT_INSPECTOR_SERVER=9222 ./cordova-ubuntu www/ --desktop_file_hint=/opt/click.ubuntu.com/' + appId + '/current/cordova.desktop\'"').then(function () {
+    return adbExecAsync(target, 'shell sudo -i -u phablet bash -c "ubuntu-app-launch  \\`ubuntu-app-triplet ' + appId + '\\`"').then(function () {
         popd();
     });
 }
