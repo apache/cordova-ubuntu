@@ -133,6 +133,63 @@ function checkEnv(ubuntuDir) {
     }
 }
 
+module.exports.createProject = function(projectPath, ROOT) {
+    if (fs.existsSync(projectPath)) {
+        console.error('Project already exists! Delete and recreate');
+        process.exit(2);
+    }
+
+    shell.mkdir(projectPath);
+    shell.cp('-r', path.join(ROOT, '*'), path.join(projectPath, 'build'));
+    shell.mkdir(path.join(projectPath, 'native'));
+    shell.cp('-r', path.join(ROOT, 'bin/build/*'), path.join(projectPath, 'cordova'));
+    shell.cp('-r', path.join(ROOT, 'bin/check_reqs'), path.join(projectPath, 'cordova'));
+
+    shell.cp('-r', path.join(ROOT, 'bin/node_modules'), path.join(projectPath, 'cordova'));
+
+    shell.cp('-r', path.join(ROOT, 'xml/config.xml'), projectPath);
+
+    shell.mkdir(path.join(projectPath, 'www'));
+    shell.cp(path.join(ROOT, 'www/cordova.js'), path.join(projectPath, 'www'));
+
+    shell.cd(projectPath);
+}
+
+module.exports.updateProject = function(projectPath, ROOT) {
+    if (!fs.existsSync(projectPath)) {
+        console.error('Project does not exist!');
+        process.exit(2);
+    }
+
+    shell.rm('-r', path.join(projectPath, 'www'));
+    shell.mkdir(path.join(projectPath, 'www'));
+    shell.cp(path.join(ROOT, 'www/cordova.js'), path.join(projectPath, 'www'));
+
+    shell.rm('-r', path.join(projectPath, 'cordova'));
+    shell.cp('-r', path.join(ROOT, 'bin/build/*'), path.join(projectPath, 'cordova'));
+    shell.cp('-r', path.join(ROOT, 'bin/check_reqs'), path.join(projectPath, 'cordova'));
+    shell.cp('-r', path.join(ROOT, 'bin/node_modules'), path.join(projectPath, 'cordova'));
+
+    var tmp = path.join(projectPath, 'tmp');
+    shell.mkdir(tmp);
+
+    var pluginsDir = path.join(projectPath, 'build', 'src', 'plugins');
+    var coreplugins = path.join(projectPath, 'build', 'src', 'coreplugins.cpp');
+    shell.mv(coreplugins, tmp);
+    shell.mv(pluginsDir, tmp);
+    shell.rm('-r', path.join(projectPath, 'build'));
+
+    shell.cp('-r', path.join(ROOT, '*'), path.join(projectPath, 'build'));
+
+    shell.rm('-r', coreplugins);
+    shell.rm('-r', pluginsDir);
+    shell.mv(path.join(tmp, 'plugins'), path.join(projectPath, 'build', 'src'));
+    shell.mv(path.join(tmp, 'coreplugins.cpp'), path.join(projectPath, 'build', 'src'));
+
+    shell.rm('-r', tmp);
+    console.log('project updated'.green);
+}
+
 function checkClickPackage(prefixDir) {
     pushd(prefixDir);
 
