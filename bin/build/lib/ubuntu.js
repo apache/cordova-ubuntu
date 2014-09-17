@@ -547,7 +547,7 @@ function runOnDevice(rootDir, debug, target, architecture, framework) {
         adbExec(target, 'forward --remove-all');
 
     adbExec(target, 'push ' + names[0] + ' /home/phablet');
-    adbExec(target, 'shell "cd /home/phablet/; pkcon install-local ' + names[0] + ' -p"');
+    adbExec(target, 'shell "cd /home/phablet/; pkcon install-local ' + names[0] + ' -p --allow-untrusted -y"');
 
     if (debug) {
         console.error('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222');
@@ -557,7 +557,7 @@ function runOnDevice(rootDir, debug, target, architecture, framework) {
 
     console.log('have fun!'.rainbow);
 
-    return adbExecAsync(target, 'shell sudo -i -u phablet bash -c "ubuntu-app-launch  \\`ubuntu-app-triplet ' + appId + '\\`"').then(function () {
+    return adbExecAsync(target, 'shell bash -c "ubuntu-app-launch  \\`ubuntu-app-triplet ' + appId + '\\`"').then(function () {
         popd();
     });
 }
