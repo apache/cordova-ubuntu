@@ -90,12 +90,16 @@ ADD_LIBRARY(cordovaubuntuplugin SHARED
   src/cplugin.cpp
   src/cordova.cpp
   src/qmlplugin.cpp
+  src/cordova_whitelist.cpp
+  src/cordova_config.cpp
 
   src/cordova.h
   src/cplugin.h
   src/qmlplugin.h
+  src/cordova_whitelist.hpp
+  src/cordova_config.hpp
 )
-qt5_use_modules(cordovaubuntuplugin Widgets Quick)
+qt5_use_modules(cordovaubuntuplugin Widgets Quick Xml)
 
 #TODO use subprojects
 file(GLOB_RECURSE PLUGIN_SOURCES src/plugins/*.cpp)

@@ -24,7 +24,9 @@
 #include <QQuickItem>
 #include <QQmlContext>
 
-Cordova::Cordova(QDir wwwDir, QString contentFile, QQuickItem *item, QObject *parent): QObject(parent), _item(item), _www(wwwDir) {
+Cordova::Cordova(QDir wwwDir, QString contentFile, QQuickItem *item, QObject *parent)
+    : QObject(parent), _item(item), _www(wwwDir), _config(_www.absoluteFilePath("../config.xml")) {
+
     qDebug() << "Using" << _www.absolutePath() << "as working dir";
 
     if (!_www.exists(contentFile))
@@ -74,6 +76,10 @@ QString Cordova::getSplashscreenPath() {
     if (!images.empty())
       return images.first().path;
     return "";
+}
+
+const CordovaInternal::Config& Cordova::config() const {
+    return _config;
 }
 
 void Cordova::initPlugins() {

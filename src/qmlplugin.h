@@ -70,6 +70,13 @@ public:
         return _cordova->mainUrl();
     }
 
+    Q_INVOKABLE bool isUrlWhiteListed(const QString &uri) {
+        if (!_cordova.data()) {
+            return true;
+        }
+        return _cordova->config().whitelist().isUrlWhiteListed(uri);
+    }
+
 signals:
     void javaScriptExecNeeded(const QString &js);
     void pluginWantsToBeAdded(const QString &pluginName, QObject *pluginObject, const QString &pluginShortName);

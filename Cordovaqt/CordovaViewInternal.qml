@@ -64,6 +64,13 @@ Item {
             anchors.fill: parent
             objectName: "webView"
 
+            onNavigationRequested: {
+                if (cordova.isUrlWhiteListed(request.url))
+                    request.action = WebView.AcceptRequest;
+                else
+                    request.action = WebView.IgnoreRequest;
+            }
+
             boundsBehavior: disallowOverscroll ? Flickable.StopAtBounds : Flickable.DragAndOvershootBounds
             property string scheme: "file"
             experimental.preferences.navigatorQtObjectEnabled: true
