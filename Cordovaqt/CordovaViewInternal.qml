@@ -17,8 +17,7 @@
  *
 */
 import QtQuick 2.0
-import QtWebKit 3.0
-import QtWebKit.experimental 1.0
+import com.canonical.Oxide 1.0
 import "cordova_wrapper.js" as CordovaWrapper
 import Ubuntu.Components 0.1
 import Ubuntu.Components.Popups 0.1
@@ -41,20 +40,7 @@ Item {
     function plugin(plugin) {
         return CordovaWrapper.pluginObjects[plugin];
     }
-
-    function overrideScheme(schemeName, pluginName) {
-        var handler = Qt.createQmlObject("import QtWebKit.experimental 1.0;"
-            + "UrlSchemeDelegate { scheme: '" + schemeName + "';"
-            + "onReceivedRequest: { var data = plugin('" + pluginName + "').handleUri(request.url); reply.data = data; reply.contentType = 'application/octet-stream'; reply.send(); } } ", webView);
-
-        var handlers = [];
-        // QQmlListProperty (qt 5.2) does not support appending items from qml
-        for (var i in webView.experimental.urlSchemeDelegates)
-            handlers.push(webView.experimental.urlSchemeDelegates[i])
-
-        handlers.push(handler);
-        webView.experimental.urlSchemeDelegates = handlers;
-    }
+    property string usContext: "oxide://main-world"
 
     Rectangle {
         id: webViewContainer
@@ -66,43 +52,68 @@ Item {
 
             onNavigationRequested: {
                 if (cordova.isUrlWhiteListed(request.url))
-                    request.action = WebView.AcceptRequest;
+                    request.action = NavigationRequest.ActionAccept;
                 else
-                    request.action = WebView.IgnoreRequest;
+                    request.action = NavigationRequest.ActionReject;
             }
 
-            boundsBehavior: disallowOverscroll ? Flickable.StopAtBounds : Flickable.DragAndOvershootBounds
+            preferences.remoteFontsEnabled: true
+            preferences.javascriptCanAccessClipboard: true
+            preferences.canDisplayInsecureContent: true
+            preferences.canRunInsecureContent: true
+
+            preferences.allowUniversalAccessFromFileUrls: true
+            preferences.allowFileAccessFromFileUrls: true
+
+            preferences.localStorageEnabled: true
+            preferences.appCacheEnabled: true
+
+//            boundsBehavior: disallowOverscroll ? Flickable.StopAtBounds : Flickable.DragAndOvershootBounds
             property string scheme: "file"
-            experimental.preferences.navigatorQtObjectEnabled: true
-            experimental.preferences.localStorageEnabled: true
-            experimental.preferences.offlineWebApplicationCacheEnabled: true
-            experimental.preferences.universalAccessFromFileURLsAllowed: true
-            experimental.preferences.webGLEnabled: true
-            experimental.databaseQuotaDialog: Item {
-                Timer {
-                    interval: 1
-                    running: true
-                    onTriggered: {
-                        model.accept(model.expectedUsage)
+
+            property var currentDialog: null
+
+            // FIXME: remove code from geolocation plugin
+            onGeolocationPermissionRequested: {
+                request.accept();
+            }
+
+            context: WebContext {
+                id: webcontext
+
+                devtoolsEnabled: true
+                devtoolsPort: 9222
+
+                userScripts: [
+                    UserScript {
+                        context: usContext
+                        emulateGreasemonkey: true
+                        url: "escape.js"
+                    }
+                ]
+                sessionCookieMode: {
+                    if (typeof webContextSessionCookieMode !== 'undefined') {
+                        if (webContextSessionCookieMode === "persistent") {
+                            return WebContext.SessionCookieModePersistent
+                        } else if (webContextSessionCookieMode === "restored") {
+                            return WebContext.SessionCookieModeRestored
+                        }
+                    }
+                    return WebContext.SessionCookieModeEphemeral
+                }
+                dataPath: cordova.getDataLocation()
+            }
+
+            messageHandlers: [
+                ScriptMessageHandler {
+                    msgId: "from-cordova"
+                    contexts: [usContext]
+                    callback: function(msg, frame) {
+                        CordovaWrapper.messageHandler(msg.args)
+                        console.log(JSON.stringify(msg.args))
                     }
                 }
-            }
-            // port in QTWEBKIT_INSPECTOR_SERVER enviroment variable
-            experimental.preferences.developerExtrasEnabled: true
-
-            function evalInPageUnsafe(expr) {
-                experimental.evaluateJavaScript('(function() { ' + expr + ' })();');
-            }
-
-            experimental.onMessageReceived: {
-                if (message.data.length > 1000) {
-                    console.debug("WebView received Message: " + message.data.substr(0, 900) + "...");
-                } else {
-                    console.debug("WebView received Message: " + message.data);
-                }
-
-                CordovaWrapper.messageHandler(message)
-            }
+            ]
 
             Component.onCompleted: {
                 root.mainWebview = webView;
@@ -115,17 +126,15 @@ Item {
             }
 
             onLoadingChanged: {
-                if (loadRequest.status) {
+                if (!webView.loading) {
                     root.completed()
                     cordova.loadFinished(true)
                 }
-                //TODO: check here for errors
             }
-
             Connections {
                 target: cordova
                 onJavaScriptExecNeeded: {
-                    webView.experimental.evaluateJavaScript(js);
+                      webView.rootFrame.sendMessage(usContext, "EXECUTE", {code: js});
                 }
                 onQmlExecNeeded: {
                     eval(src);

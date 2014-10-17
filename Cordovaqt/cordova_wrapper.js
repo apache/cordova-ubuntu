@@ -29,8 +29,7 @@ function addPlugin(pluginName, pluginObject) {
     pluginObjects[pluginName] = pluginObject
 }
 
-function messageHandler(message) {
-    var received = eval(message.data); // TODO: qt 5.2 have buggy JSON.parse. JSON.parse fails on FileApi tests
+function messageHandler(received) {
     if (typeof received === 'undefined')
         return false;
     if (typeof received.messageType === 'undefined')
@@ -46,6 +45,7 @@ function messageHandler(message) {
 function execMethod(pluginName, functionName, params) {
     if (typeof pluginObjects[pluginName][functionName] != "function")
         return false;
+
     pluginObjects[pluginName][functionName].apply(this, params);
     return true;
 }

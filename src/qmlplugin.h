@@ -63,6 +63,10 @@ public:
         return QSharedPointer<Cordova>(new Cordova(QDir(www), "index.html", parent))->getSplashscreenPath();
     }
 
+    Q_INVOKABLE static QString getDataLocation() {
+        return QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    }
+
     QString mainUrl() {
         if (!_cordova.data()) {
             return "";
