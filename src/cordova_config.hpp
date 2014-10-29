@@ -21,13 +21,25 @@
 #include "cordova_whitelist.hpp"
 
 namespace CordovaInternal {
-    class Config {
+    class Config: public QObject {
+        Q_OBJECT
     public:
         explicit Config(const QString &xmlConfig);
 
         const WhiteList& whitelist() const;
+        const QString& content() const;
+
+        Q_INVOKABLE QString appId() const;
+        Q_INVOKABLE QString appVersion() const;
+
+        bool disallowOverscroll() const;
+        Q_INVOKABLE bool fullscreen() const;
     private:
         WhiteList _whitelist;
+        QString _content;
+        QString _appId, _appVersion;
+        bool _fullscreen, _disallowOverscroll;
+
         Q_DISABLE_COPY(Config);
     };
 }

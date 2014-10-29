@@ -27,9 +27,9 @@ Config::Config(const QString &xmlConfig) {
 
     config.setContent(f1.readAll(), false);
 
-    QDomNodeList access = config.documentElement().elementsByTagName("access");
-    for (int i = 0; i < access.size(); ++i) {
-        QDomNode node = access.at(i);
+    QDomNodeList nodes = config.documentElement().elementsByTagName("access");
+    for (int i = 0; i < nodes.size(); ++i) {
+        QDomNode node = nodes.at(i);
         QDomElement* element = static_cast<QDomElement*>(&node);
 
         QString origin = element->attribute("origin");
@@ -37,8 +37,55 @@ Config::Config(const QString &xmlConfig) {
         _whitelist.addWhiteListEntry(origin, false);
     }
 
+    _fullscreen = false;
+    _disallowOverscroll = false;
+    nodes = config.documentElement().elementsByTagName("preference");
+    for (int i = 0; i < nodes.size(); ++i) {
+        QDomNode node = nodes.at(i);
+        QDomElement* element = static_cast<QDomElement*>(&node);
+
+        QString name = element->attribute("name"), value = element->attribute("value");
+
+        if (name == "Fullscreen")
+            _fullscreen = value == "true";
+        if (name == "DisallowOverscroll")
+            _disallowOverscroll = value == "true";
+    }
+
+    _content = "index.html";
+    nodes = config.documentElement().elementsByTagName("content");
+    for (int i = 0; i < nodes.size(); ++i) {
+        QDomNode node = nodes.at(i);
+        QDomElement* element = static_cast<QDomElement*>(&node);
+
+        _content = element->attribute("src");
+        break;
+    }
+
+    _appId = config.documentElement().attribute("id");
+    _appVersion = config.documentElement().attribute("version");
 }
 
 const WhiteList& Config::whitelist() const {
     return _whitelist;
+}
+
+const QString& Config::content() const {
+    return _content;
+}
+
+QString Config::appId() const {
+    return _appId;
+}
+
+QString Config::appVersion() const {
+    return _appVersion;
+}
+
+bool Config::disallowOverscroll() const {
+    return _disallowOverscroll;
+}
+
+bool Config::fullscreen() const {
+    return _fullscreen;
 }

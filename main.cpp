@@ -16,10 +16,8 @@
  */
 
 #include <QtCore>
-#include <QtXml>
 #include <QApplication>
 #include <QtQuick>
-#include <cassert>
 
 static void customMessageOutput(QtMsgType type, const QMessageLogContext &, const QString &msg) {
     switch (type) {
@@ -59,59 +57,12 @@ int main(int argc, char *argv[]) {
         wwwDir.cd("www");
     }
 
-    QQuickView view;
+    QQmlApplicationEngine view;
 
     QDir workingDir = QApplication::applicationDirPath();
     view.rootContext()->setContextProperty("www", wwwDir.absolutePath());
 
-    QDomDocument config;
-
-    QFile f1(QApplication::applicationDirPath() + "/config.xml");
-    f1.open(QIODevice::ReadOnly);
-
-    config.setContent(f1.readAll(), false);
-
-    QString id = config.documentElement().attribute("id");
-    QString version = config.documentElement().attribute("version");
-    assert(id.size());
-
-    QCoreApplication::setApplicationName(id);
-    QCoreApplication::setApplicationVersion(version);
-
-    bool fullscreen = false;
-    bool disallowOverscroll = false;
-    QString content = "index.html";
-    QDomNodeList preferences = config.documentElement().elementsByTagName("preference");
-    for (int i = 0; i < preferences.size(); ++i) {
-        QDomNode node = preferences.at(i);
-        QDomElement* element = static_cast<QDomElement*>(&node);
-
-        QString name = element->attribute("name"), value = element->attribute("value");
-
-        if (name == "Fullscreen")
-            fullscreen = value == "true";
-        if (name == "DisallowOverscroll")
-            disallowOverscroll = value == "true";
-    }
-
-    preferences = config.documentElement().elementsByTagName("content");
-    for (int i = 0; i < preferences.size(); ++i) {
-        QDomNode node = preferences.at(i);
-        QDomElement* element = static_cast<QDomElement*>(&node);
-
-        content = element->attribute("src");
-        break;
-    }
-
-    view.setResizeMode(QQuickView::SizeRootObjectToView);
-    view.rootContext()->setContextProperty("overscroll", !disallowOverscroll);
-    view.rootContext()->setContextProperty("content", content);
-    view.setSource(QUrl(QString("%1/qml/main.qml").arg(workingDir.absolutePath())));
-
-    if (fullscreen)
-        view.showFullScreen();
-    else
-        view.show();
+    view.load(QUrl(QString("%1/qml/main.qml").arg(workingDir.absolutePath())));
 
     return app.exec();
 }

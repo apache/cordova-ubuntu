@@ -28,23 +28,9 @@
 class CordovaWrapper: public QQuickItem {
     Q_OBJECT
     Q_PROPERTY(QString wwwDir READ wwwDir WRITE setWwwDir SCRIPTABLE true FINAL)
-    Q_PROPERTY(QString contentFile READ contentFile WRITE setContentFile SCRIPTABLE true FINAL)
     Q_PROPERTY(QString mainUrl READ mainUrl CONSTANT)
 public:
     CordovaWrapper() = default;
-
-    QString contentFile() {
-        if (!_cordova.data()) {
-            return "";
-        }
-        return _contentFile;
-    }
-
-    void setContentFile(const QString &value) {
-        _contentFile = value;
-
-        initialize();
-    }
 
     QString wwwDir() {
         if (!_cordova.data()) {
@@ -59,8 +45,9 @@ public:
         initialize();
     }
 
-    Q_INVOKABLE static QString getSplashscreenPath(QQuickItem *parent, const QString &www) {
-        return QSharedPointer<Cordova>(new Cordova(QDir(www), "index.html", parent))->getSplashscreenPath();
+    Q_INVOKABLE QString getSplashscreenPath() {
+        assert(_cordova.data());
+        return _cordova->getSplashscreenPath();
     }
 
     Q_INVOKABLE static QString getDataLocation() {
@@ -79,6 +66,15 @@ public:
             return true;
         }
         return _cordova->config().whitelist().isUrlWhiteListed(uri);
+    }
+
+    Q_INVOKABLE CordovaInternal::Config* config() const {
+        assert(_cordova.data());
+
+        //FIXME:
+        CordovaInternal::Config *config = const_cast<CordovaInternal::Config*>(&_cordova->config());
+        QQmlEngine::setObjectOwnership(config, QQmlEngine::CppOwnership);
+        return config;
     }
 
 signals:
@@ -108,10 +104,10 @@ private:
     void initialize() {
         assert(!_cordova.data());
 
-        if (!_wwwDir.size() || !_contentFile.size())
+        if (!_wwwDir.size())
             return;
 
-        _cordova = QSharedPointer<Cordova>(new Cordova(QDir(_wwwDir), _contentFile, this));
+        _cordova = QSharedPointer<Cordova>(new Cordova(QDir(_wwwDir), this));
 
         connect(_cordova.data(), &Cordova::javaScriptExecNeeded, [&] (const QString &js) {
             emit javaScriptExecNeeded(js);
@@ -126,7 +122,6 @@ private:
 
     QSharedPointer<Cordova> _cordova;
     QString _wwwDir;
-    QString _contentFile;
 };
 
 class CordovaUbuntuPlugin: public QQmlExtensionPlugin {

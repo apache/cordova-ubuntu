@@ -17,10 +17,8 @@
  *
 */
 #include "qmlplugin.h"
-#include "cordova.h"
-#include <QtCore>
-#include <qqml.h>
 
 void CordovaUbuntuPlugin::registerTypes(const char *) {
     qmlRegisterType<CordovaWrapper>("CordovaUbuntu", CORDOVA_UBUNTU_MAJOR_VERSION, CORDOVA_UBUNTU_MINOR_VERSION, "Cordova");
+    qmlRegisterUncreatableType<CordovaInternal::Config>("CordovaUbuntu", CORDOVA_UBUNTU_MAJOR_VERSION, CORDOVA_UBUNTU_MINOR_VERSION, "Config", "...");
 }
