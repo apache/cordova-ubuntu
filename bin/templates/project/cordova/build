@@ -2,7 +2,7 @@
 
 /*
  *
- * Copyright 2014 Canonical Ltd.
+ * Copyright 2013 Canonical Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,4 +19,15 @@
  *
 */
 
-require('./lib/check_reqs').check_reqs();
+var path = require('path');
+var build = require('./lib/build').build;
+var check_reqs = require('./lib/check_reqs').check_reqs;
+var PLATFORMS = require('./lib/constants').PLATFORM_TYPES;
+
+var root = path.resolve();
+var www = path.join(root, 'www');
+
+check_reqs(function () {
+    var argv = require('optimist').string(['framework']).argv;
+    return build(root, PLATFORMS.ALL, false, undefined, argv.framework, false);
+});

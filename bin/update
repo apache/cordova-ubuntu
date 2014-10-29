@@ -20,42 +20,15 @@
 */
 var path = require('path');
 var args = process.argv;
-var ROOT = path.join(__dirname, '..');
 var fs    = require('fs');
 
-function installDependecies(cb) {
-    console.log('running \'npm install\'.....');
-    var exec = require('child_process').exec;
-    var cwd = process.cwd();
+var ROOT = path.join(__dirname, '..');
+var projectPath = args[2];
 
-    var block = true;
-    exec('npm install', {cwd: __dirname}, function (error, stdout, stderr) {
-        block = false;
-        if (error !== null) {
-            console.error('ERROR : running \'npm install\' is npm installed? ' + error);
-            console.error(stderr);
-            process.exit(error.code);
-        }
-    });
-    function wait() {
-        if (block)
-            setTimeout(wait, 1500);
-        else
-            cb();
-    };
-    setTimeout(wait, 1500);
-}
-
-
-function updateProject(projectPath, ROOT) {
-    installDependecies(function () {
-        var currentVersion = fs.readFileSync(path.join(projectPath, 'build', 'VERSION'), {encoding: "utf8"});
-        var version = fs.readFileSync(path.join(ROOT, 'VERSION'), {encoding: "utf8"});
-        if (version == currentVersion)
-            return;
-
-        require('./build/lib/ubuntu').updateProject(projectPath, ROOT);
+var currentVersion = fs.readFileSync(path.join(projectPath, 'build', 'VERSION'), {encoding: "utf8"});
+var version = fs.readFileSync(path.join(ROOT, 'VERSION'), {encoding: "utf8"});
+if (version !== currentVersion) {
+    check_reqs(function () {
+        require('./lib/update').updateProject(projectPath, ROOT);
     });
 }
-
-updateProject(args[2], ROOT);

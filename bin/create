@@ -2,7 +2,7 @@
 
 /*
  *
- * Copyright 2013 Canonical Ltd.
+ * Copyright 2014 Canonical Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,56 +20,19 @@
 */
 var path = require('path');
 var args = process.argv;
-var ROOT = path.join(__dirname, '..');
-var fs    = require('fs');
 
-function help() {
+var check_reqs = require('./lib/check_reqs').check_reqs;
+
+
+if (args.length < 3 || (args[2] == '--help' || args[2] == '/?' || args[2] == '-h' ||
+                       args[2] == 'help' || args[2] == '-help' || args[2] == '/help')) {
     console.log('Usage: ' + path.relative(process.cwd(), path.join(ROOT, 'bin', 'create')) + ' <path_to_new_project> <package_name> <project_name>');
     console.log('    <path_to_new_project>: Path to your new Cordova Ubuntu project');
     console.log('    <package_name>: Package name');
     console.log('    <project_name>: Project name');
-    process.exit(0);
-}
-
-function create(projectPath) {
-    function create_project() {
-        require('./build/lib/ubuntu').createProject(projectPath, ROOT);
-    }
-
-    try {
-        require.resolve("shelljs");
-        require.resolve("elementtree");
-        require.resolve("colors");
-        require.resolve("optimist");
-        require.resolve("q");
-        create_project();
-    } catch(e) {
-        console.log('Shelljs module was not found, running \'npm install\'.....');
-        var exec = require('child_process').exec;
-        var cwd = process.cwd();
-
-        var block = true;
-        exec('npm install', {cwd: __dirname}, function (error, stdout, stderr) {
-            block = false;
-            if (error !== null) {
-                console.error('ERROR : running \'npm install\' is npm installed? ' + error);
-                console.error(stderr);
-                process.exit(error.code);
-            }
-        });
-        function wait() {
-            if (block)
-                setTimeout(wait, 1500);
-            else
-                create_project();
-        };
-        setTimeout(wait, 1500);
-    }
-}
-
-if(args.length < 3 || (args[2] == '--help' || args[2] == '/?' || args[2] == '-h' ||
-                       args[2] == 'help' || args[2] == '-help' || args[2] == '/help')) {
-    help();
+    process.exit(1);
 } else {
-    create(args[2]);
+    check_reqs(function () {
+        require('./lib/create').createProject(args[2], args[3], args[4], args[5]);
+    });
 }

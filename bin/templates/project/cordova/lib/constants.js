@@ -2,7 +2,7 @@
 
 /*
  *
- * Copyright 2013 Canonical Ltd.
+ * Copyright 2014 Canonical Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,18 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
-*/
-
-var path = require('path');
-var platform = require('./lib/ubuntu');
-
-var root = path.resolve();
-var www = path.join(root, 'www');
-
-var argv = require('optimist').string(['framework']).argv;
-
-platform.check_reqs(root).then(function () {
-    return platform.build(root, platform.ALL, false, undefined, argv.framework, false);
-}).done();
+ */
+ 
+module.exports = {
+    'DEFAULT_FRAMEWORK': 'ubuntu-sdk-14.04',
+    'DEFAULT_ARCH': 'armhf',
+    'PLATFORM_TYPES': {
+        'PHONE': 0,
+        'DESKTOP': 1,
+        'ALL': 2
+    },
+    'MSG': {
+        'UBUNTU_TOUCH_DEVICE_NOT_AVALIABLE': 'UbuntuTouch device is not attached',
+        'EMULATOR_IS_NOT_RUNNING': 'UbuntuTouch emulator is not running'
+    }
+};

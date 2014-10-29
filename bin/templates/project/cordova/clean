@@ -23,6 +23,5 @@ var args = process.argv;
 var ROOT = path.join(__dirname, '..');
 var shell = require('shelljs');
 var fs    = require('fs');
-var et    = require('elementtree');
 
 throw new Error('unimplemented');
