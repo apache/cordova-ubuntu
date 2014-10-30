@@ -2,7 +2,7 @@
 
 /*
  *
- * Copyright 2014 Canonical Ltd.
+ * Copyright 2013, 2014 Canonical Ltd.    
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,12 @@
  *
 */
 
-var shell = require('shelljs'),
-	// child_process = require('child_process'),
-	path = require('path'),
-	fs = require('fs'),
-	check_reqs = require('./check_reqs').check_reqs,
-	ROOT = path.join(__dirname, '..', '..');
+var shell = require('shelljs');
+var path = require('path');
+var fs = require('fs');
+var check_reqs = require('./check_reqs').check_reqs;
+
+var ROOT = path.join(__dirname, '..', '..');
 
 exports.createProject = function(projectPath, packageName, projectName) {
     if (fs.existsSync(projectPath)) {
@@ -38,24 +38,24 @@ exports.createProject = function(projectPath, packageName, projectName) {
         'Project Name: ' + projectName + '\n'
         );
 
-	shell.mkdir(projectPath);
+    shell.mkdir(projectPath);
 
-	shell.cp('-r', path.join(ROOT, '*'), path.join(projectPath, 'build'));
+    shell.cp('-r', path.join(ROOT, '*'), path.join(projectPath, 'build'));
 
-	shell.mkdir(path.join(projectPath, 'native'));
+    shell.mkdir(path.join(projectPath, 'native'));
 
-	// Copy the necessary node_modules for building and running the project.
-	shell.cp('-r', path.join(ROOT, 'node_modules'), path.join(projectPath, 'cordova'));
+    // Copy the necessary node_modules for building and running the project.
+    shell.cp('-r', path.join(ROOT, 'node_modules'), path.join(projectPath, 'cordova'));
 
-	// Checking requirements task needs to be copied as well.
-	shell.cp('-r', path.join(ROOT, 'bin/check_reqs'), path.join(projectPath, 'cordova'));
-	shell.cp('-r', path.join(ROOT, 'bin', 'lib', 'check_reqs.js'), path.join(projectPath, 'cordova', 'lib'));
+    // Checking requirements task needs to be copied as well.
+    shell.cp('-r', path.join(ROOT, 'bin/check_reqs'), path.join(projectPath, 'cordova'));
+    shell.cp('-r', path.join(ROOT, 'bin', 'lib', 'check_reqs.js'), path.join(projectPath, 'cordova', 'lib'));
 
-	// Copy the default template including the defaults.xml for the Ubuntu platform.
-	shell.cp('-r', path.join(ROOT, 'bin', 'templates', 'project', 'cordova'), projectPath);
+    // Copy the default template including the defaults.xml for the Ubuntu platform.
+    shell.cp('-r', path.join(ROOT, 'bin', 'templates', 'project', 'cordova'), projectPath);
 
-	shell.mkdir(path.join(projectPath, 'www'));
-	shell.cp(path.join(ROOT, 'www', 'cordova.js'), path.join(projectPath, 'www'));
+    shell.mkdir(path.join(projectPath, 'www'));
+    shell.cp(path.join(ROOT, 'www', 'cordova.js'), path.join(projectPath, 'www'));
 
     shell.cp('-r', path.join(ROOT, 'xml/config.xml'), projectPath);
 } 

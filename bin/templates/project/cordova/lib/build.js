@@ -74,7 +74,7 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
     shell.mkdir(path.join(archDir, 'build'));
     shell.mkdir(prefixDir);
 
-    shell.pushd(path.join(archDir, 'build'));
+    Utils.pushd(path.join(archDir, 'build'));
 
     var buildType = '"Debug"';
     if (!debug)
@@ -114,7 +114,7 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
             content.policy_version = 1.1;
         fs.writeFileSync(path.join(prefixDir, 'apparmor.json'), JSON.stringify(content));
 
-        shell.pushd(prefixDir);
+        Utils.pushd(prefixDir);
 
         return Utils.execAsync('click build .');
     }).then(function () {
@@ -140,7 +140,7 @@ function buildNative(campoDir, ubuntuDir, nobuild, debug) {
     shell.mkdir('-p', path.join(nativeDir, 'build'));
     shell.mkdir(prefixDir);
 
-    shell.pushd(path.join(nativeDir, 'build'));
+    Utils.pushd(path.join(nativeDir, 'build'));
 
     var buildType = '"Debug"';
     if (!debug)
@@ -243,7 +243,7 @@ function additionalBuildDependencies(ubuntuDir) {
 }
 
 function checkClickPackage(prefixDir) {
-    shell.pushd(prefixDir);
+    Utils.pushd(prefixDir);
 
     // 13.10 missing click-reviewers-tools package
     // FIXME: remove this check after EOL

@@ -2,7 +2,7 @@
 
 /*
  *
- * Copyright 2014 Canonical Ltd.
+ * Copyright 2013, 2014 Canonical Ltd.    
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,11 @@
  *
 */
 
-var shell = require('shelljs'),
-	// child_process = require('child_process'),
-	path = require('path'),
-	fs = require('fs'),
-	check_reqs = require('./check_reqs'),
-	ROOT = path.join(__dirname, '..', '..');
+var shell = require('shelljs');
+var path = require('path');
+var fs = require('fs');
+
+var ROOT = path.join(__dirname, '..', '..');
 
 exports.updateProject = function(projectPath) {
     if (!fs.existsSync(projectPath)) {
