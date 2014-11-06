@@ -2,7 +2,7 @@
 
 /*
  *
- * Copyright 2013 Canonical Ltd.
+ * Copyright 2014 Canonical Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,18 +19,26 @@
  *
 */
 
-var path = require('path');
-var build = require('./lib/build').build;
-var check_reqs = require('./lib/check_reqs').check_reqs;
-var PLATFORMS = require('./lib/constants').PLATFORM_TYPES;
+var shellCfg = require('shelljs').config;
 
-var root = path.resolve();
-var www = path.join(root, 'www');
+/**
+ * The configuration is used by other tasks to access shared properties, such as if the tasks are
+ * running in debug mode (verbose).
+ */
+function Config() {
+    this._debug = false;
+    shellCfg.silent = true;
+}
 
-check_reqs(function () {
-    var argv = require('optimist').boolean(['debug']).string(['framework']).argv;
-    if (argv.debug) {
-      require('./lib/config').debugMode();
+Config.prototype = {
+    debugMode: function () {
+        this._debug = true;
+        shellCfg.silent = false;
+    },
+
+    inDebugMode: function () {
+        return this._debug;
     }
-    return build(root, PLATFORMS.ALL, false, undefined, argv.framework, false);
-});
+};
+
+module.exports = new Config();

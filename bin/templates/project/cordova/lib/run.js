@@ -25,6 +25,7 @@ var path = require('path');
 var shell = require('shelljs');
 
 var build = require('./build').build;
+var logger = require('./logger');
 
 var Devices = require('./device');
 var Constants = require('./constants');
@@ -35,19 +36,23 @@ var MSG = Constants.MSG;
 
 module.exports.run = function(rootDir, desktop, debug, target, nobuild, emulator, framework) {
     if (desktop && !emulator) {
+        logger.info('Building Desktop Application...');
         return build(rootDir, PLATFORMS.DESKTOP, nobuild, null, null, debug).then(function () {
+            logger.info('Build Successful. Running the application.');
             return runNative(rootDir, debug);
         });
     }
 
-    if (!framework)
+    if (!framework) {
+        logger.warn('No framework specified. Using default framework: ' + Constants.DEFAULT_FRAMEWORK);
         framework = Constants.DEFAULT_FRAMEWORK;
+    }
 
     if (!target) {
         var devices = Devices.list();
 
         if (!devices.length) {
-            console.error(MSG.UBUNTU_TOUCH_DEVICE_NOT_AVALAIBLE.red)
+            logger.error(MSG.UBUNTU_TOUCH_DEVICE_NOT_AVALAIBLE);
             process.exit(1);
         }
 
@@ -56,7 +61,7 @@ module.exports.run = function(rootDir, desktop, debug, target, nobuild, emulator
                 return name.match(/^emulator-/);
             });
             if (!devices.length) {
-                console.error(MSG.EMULATOR_IS_NOT_RUNNING.red)
+                logger.error(MSG.EMULATOR_IS_NOT_RUNNING);
                 process.exit(1);
             }
         }
@@ -64,19 +69,21 @@ module.exports.run = function(rootDir, desktop, debug, target, nobuild, emulator
         target = devices[0];
 
         if (devices.length > 1) {
-            console.warn('you can specify target with --target <device id>'.yellow);
-            console.warn(('running on ' + target).yellow);
+            logger.warn('Multiple targets found, you can specify target with --target <device id>');
         }
+
+        logger.info('Target Device: ' + target);
     }
     var arch = Devices.arch(target);
 
     return build(rootDir, PLATFORMS.PHONE, nobuild, arch, framework, debug).then(function () {
+        logger.info('Build Successful. Running the application.');
         return runOnDevice(rootDir, debug, target, arch, framework);
     });
 };
 
 function runNative(rootDir, debug) {
-    console.log('Running Cordova'.green);
+    logger.info('Running Cordova');
     var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
     var nativeDir = path.join(ubuntuDir, 'native');
 
@@ -85,9 +92,10 @@ function runNative(rootDir, debug) {
     var cmd = 'QTWEBKIT_INSPECTOR_SERVER=9222 ./cordova-ubuntu www/';
     if (debug) {
         cmd = "DEBUG=1 " + cmd;
-        console.error('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222'.yellow);
+        logger.info('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222');
     }
 
+    logger.info('Launching the application.');
     return Utils.execAsync(cmd).then(function () {
         Utils.popd();
     });
@@ -97,7 +105,7 @@ function runOnDevice(rootDir, debug, target, architecture, framework) {
     var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
 
     if (!Devices.isAttached(target)) {
-        console.error(MSG.UBUNTU_TOUCH_DEVICE_NOT_AVALAIBLE.red);
+        logger.error(MSG.UBUNTU_TOUCH_DEVICE_NOT_AVALAIBLE);
         process.exit(1);
     }
 
@@ -110,27 +118,30 @@ function runOnDevice(rootDir, debug, target, architecture, framework) {
     var appId = manifest.name;
 
     var names = shell.ls().filter(function (name) {
-        return name.indexOf(appId) == 0 && name.indexOf('.click');
+        return name.indexOf(appId) === 0 && name.indexOf('.click');
     });
 
     assert.ok(names.length == 1);
 
+    logger.info('Killing application if already running on your device.');
     Devices.adbExec(target, 'shell "ps -A -eo pid,cmd | grep cordova-ubuntu | awk \'{ print \\$1 }\' | xargs kill -9"');
 
     if (debug)
         Devices.adbExec(target, 'forward --remove-all');
 
+    logger.info('Installing the application on your device.');
     Devices.adbExec(target, 'push ' + names[0] + ' /home/phablet');
-    Devices.adbExec(target, 'shell "cd /home/phablet/; pkcon install-local ' + names[0] + ' -p --allow-untrusted -y"');
+    Devices.adbExec(target, 'shell "cd /home/phablet/; pkcon install-local ' + names[0] + ' -p --allow-untrusted -y"', {silent: false});
 
     if (debug) {
-        console.error('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222');
+        logger.info('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222');
         Devices.adbExec(target, 'forward tcp:9222 tcp:9222');
     }
 
-    console.log('have fun!'.rainbow);
+    logger.info('Launching the application on your device.');
 
     return Devices.adbExecAsync(target, 'shell bash -c "ubuntu-app-launch  \\`ubuntu-app-triplet ' + appId + '\\`"').then(function () {
+        logger.rainbow('have fun!');
         Utils.popd();
     });
 }

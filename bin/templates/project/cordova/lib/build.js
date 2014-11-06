@@ -28,6 +28,7 @@ var shell = require('shelljs');
 
 var Constants = require('./constants');
 var Utils = require('./utils');
+var logger = require('./logger');
 
 var PLATFORMS = Constants.PLATFORM_TYPES;
 
@@ -54,6 +55,8 @@ module.exports.build = function(rootDir, target, nobuild, architecture, framewor
 };
 
 function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework, debug) {
+    logger.info('Building Phone Application...');
+
     assert.ok(architecture && architecture.match(/^[a-z0-9_]+$/));
 
     var archDir = path.join(ubuntuDir, framework, architecture);
@@ -126,6 +129,8 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
 }
 
 function buildNative(campoDir, ubuntuDir, nobuild, debug) {
+    logger.info('Building Desktop Application...');
+
     var nativeDir = path.join(ubuntuDir, 'native');
     var prefixDir = path.join(nativeDir, 'prefix');
 
@@ -206,8 +211,8 @@ function buildNative(campoDir, ubuntuDir, nobuild, debug) {
         for (var i = 0; i < templates.length; i++) {
             fillTemplate(templates[i].source, templates[i].dest, props);
         }
-        console.error('In order to build debian package, execute'.yellow);
-        console.error(('cd ' + debDir + '; ' + 'debuild').yellow);
+        logger.info('In order to build debian package, execute: ');
+        logger.info('cd ' + debDir + '; ' + 'debuild');
     });
 };
 
@@ -218,7 +223,7 @@ function buildNative(campoDir, ubuntuDir, nobuild, debug) {
 function fillTemplate(source, dest, obj) {
     var content = fs.readFileSync(source, {encoding: "utf8"});
     for (var prop in obj) {
-        content = content.replace(new RegExp('{' + prop + '}', 'g'), obj[prop])
+        content = content.replace(new RegExp('{' + prop + '}', 'g'), obj[prop]);
     }
 
     fs.writeFileSync(dest, content);
@@ -249,7 +254,7 @@ function checkClickPackage(prefixDir) {
     // FIXME: remove this check after EOL
     if (fs.existsSync('/usr/bin/click-run-checks')) {
         var cmd = '/usr/bin/click-run-checks *.click';
-        console.log(cmd.green);
+        logger.debug(cmd);
         var output = shell.exec(cmd, { silent: true }).output;
         var json = '[', b = 0;
         for (var i = 0; i < output.length; i++) {
@@ -272,9 +277,9 @@ function checkClickPackage(prefixDir) {
             if (out[i].warn) {
                 for (var m in out[i].warn) {
                     if (out[i].warn[m].text) {
-                        console.warn(out[i].warn[m].text.yellow);
+                        logger.warn(out[i].warn[m].text);
                         if (out[i].warn[m].link)
-                            console.warn(out[i].warn[m].link);
+                            logger.warn(out[i].warn[m].link);
                     }
                 }
             }
@@ -283,9 +288,9 @@ function checkClickPackage(prefixDir) {
             if (out[i].error) {
                 for (var m in out[i].error) {
                     if (out[i].error[m].text) {
-                        console.warn(out[i].error[m].text.yellow);
+                        logger.warn(out[i].error[m].text);
                         if (out[i].error[m].link)
-                            console.warn(out[i].error[m].link);
+                            logger.warn(out[i].error[m].link);
                     }
                 }
             }
@@ -307,11 +312,9 @@ function checkEnv(ubuntuDir) {
         return;
 
     var cmd = "dpkg-query -Wf'${db:Status-abbrev}' " + deps;
-    console.log(cmd.green);
-    res = shell.exec(cmd);
-
+    var res = Utils.execSync(cmd);
     if (res.code !== 0 || res.output.indexOf('un') !== -1) {
-        console.error(("Error: missing packages" + deps).red);
+        logger.error("Error: missing packages" + deps);
         process.exit(1);
     }
 }
@@ -322,13 +325,11 @@ function checkChrootEnv(ubuntuDir, architecture, framework) {
     deps = deps.replace(/ARCH/g, architecture);
 
     var cmd = "click chroot -a " + architecture + " -f " + framework + " run dpkg-query -Wf'${db:Status-abbrev}' " + deps;
-    console.log(cmd.green);
-    res = shell.exec(cmd);
-
+    var res = Utils.execSync(cmd);
     if (res.code !== 0 || res.output.indexOf('un') !== -1) {
-        console.error(("Error: missing " + architecture + " chroot").red);
-        console.error(("run:\nsudo click chroot -a " + architecture + " -f " + framework + " create").red);
-        console.error(("sudo click chroot -a " + architecture + " -f " + framework + " install " + deps).red);
+        logger.error("Error: missing " + architecture + " chroot");
+        logger.error("run:\nsudo click chroot -a " + architecture + " -f " + framework + " create");
+        logger.error("sudo click chroot -a " + architecture + " -f " + framework + " install " + deps);
         process.exit(1);
     }
 }
@@ -348,5 +349,3 @@ function additionalDependencies(ubuntuDir) {
     }
     return deb;
 }
-
-

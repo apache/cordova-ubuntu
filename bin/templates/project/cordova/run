@@ -29,5 +29,8 @@ var www = path.join(root, 'www');
 
 check_reqs(function () {
     var argv = require('optimist').boolean(['device', 'emulator', 'debug', 'nobuild']).string(['target', 'framework']).argv;
+    if (argv.debug) {
+      require('./lib/config').debugMode();
+    }
     return run(root, !argv.device, argv.debug, argv.target, argv.nobuild, argv.emulator, argv.framework);
 });

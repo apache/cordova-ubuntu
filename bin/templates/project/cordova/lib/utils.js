@@ -22,46 +22,55 @@ var Q = require('q');
 var colors = require('colors');
 var shell = require('shelljs');
 
+var config = require('./config');
+var logger = require('./logger');
+
 module.exports.cp = function(source, dest) {
-    console.log(('cp -Rf ' + source + ' ' + dest).green);
+    var cmd = 'cp -Rf ' + source + ' ' + dest;
+    logger.debug(cmd);
 
     if (shell.cp('-r', source, dest) === null) {
-        console.error("FAILED".underline.red);
+        logger.error(cmd + " FAILED".underline);
         process.exit(1);
     }
 };
 
 module.exports.pushd = function(dir) {
-    console.log(('pushd ' + dir).green);
+    logger.debug('pushd ' + dir);
     shell.pushd(dir);
 };
 
 module.exports.popd = function(dir) {
-    console.log(('popd').green);
+    logger.debug('popd');
     shell.popd();
 };
 
 module.exports.execSync = function(cmd, silent) {
-    console.log(cmd.green);
+    logger.debug(cmd);
 
+    silent = (typeof silent === 'boolean') ? silent : !config.inDebugMode();
     var res = shell.exec(cmd, { silent: silent });
     if (res.code !== 0) {
-        console.error(cmd.green + " " + "FAILED".underline.red);
+        logger.error(cmd.green + " " + "FAILED".underline);
+        logger.error(res.output);
+        logger.error('You can run with --debug to debug more easily.');
         process.exit(1);
     }
 
     return res;
 };
 
-module.exports.execAsync = function (cmd) {
+module.exports.execAsync = function (cmd, silent) {
+    logger.debug(cmd);
+
     var deferred = Q.defer();
-
-    console.log(cmd.green);
-
-    shell.exec(cmd, { async: true }, function (code, output) {
+    silent = (typeof silent === 'boolean') ? silent : !config.inDebugMode();
+    shell.exec(cmd, { async: true, silent: silent }, function (code, output) {
         var res = { code: code, output: output };
         if (res.code !== 0) {
-            console.error(cmd.green + " " + "FAILED".underline.red);
+            logger.error(cmd.green + " " + "FAILED".underline);
+            logger.error(res.output);
+            logger.error('You can run with --debug to debug more easily.')
             process.exit(1);
         }
         deferred.resolve(res);
@@ -69,4 +78,3 @@ module.exports.execAsync = function (cmd) {
 
     return deferred.promise;
 };
-
