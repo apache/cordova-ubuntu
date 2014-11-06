@@ -30,7 +30,7 @@ var Devices = require('./device');
 var Constants = require('./constants');
 var Utils = require('./utils');
 
-var PLATFORMS = Constants.PLATFORM_TYPES; 
+var PLATFORMS = Constants.PLATFORM_TYPES;
 var MSG = Constants.MSG;
 
 module.exports.run = function(rootDir, desktop, debug, target, nobuild, emulator, framework) {
@@ -96,8 +96,8 @@ function runNative(rootDir, debug) {
 function runOnDevice(rootDir, debug, target, architecture, framework) {
     var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
 
-    if (!isDeviceAttached(target)) {
-        console.error(MSG.UBUNTU_TOUCH_DEVICE_NOT_AVALIABLE.red)
+    if (!Devices.isAttached(target)) {
+        console.error(MSG.UBUNTU_TOUCH_DEVICE_NOT_AVALIABLE.red);
         process.exit(1);
     }
 
@@ -115,23 +115,22 @@ function runOnDevice(rootDir, debug, target, architecture, framework) {
 
     assert.ok(names.length == 1);
 
-    adbExec(target, 'shell "ps -A -eo pid,cmd | grep cordova-ubuntu | awk \'{ print \\$1 }\' | xargs kill -9"')
+    Devices.adbExec(target, 'shell "ps -A -eo pid,cmd | grep cordova-ubuntu | awk \'{ print \\$1 }\' | xargs kill -9"');
 
     if (debug)
-        adbExec(target, 'forward --remove-all');
+        Devices.adbExec(target, 'forward --remove-all');
 
-    adbExec(target, 'push ' + names[0] + ' /home/phablet');
-    adbExec(target, 'shell "cd /home/phablet/; pkcon install-local ' + names[0] + ' -p --allow-untrusted -y"');
+    Devices.adbExec(target, 'push ' + names[0] + ' /home/phablet');
+    Devices.adbExec(target, 'shell "cd /home/phablet/; pkcon install-local ' + names[0] + ' -p --allow-untrusted -y"');
 
     if (debug) {
         console.error('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222');
-
-        adbExec(target, 'forward tcp:9222 tcp:9222');
+        Devices.adbExec(target, 'forward tcp:9222 tcp:9222');
     }
 
     console.log('have fun!'.rainbow);
 
-    return adbExecAsync(target, 'shell bash -c "ubuntu-app-launch  \\`ubuntu-app-triplet ' + appId + '\\`"').then(function () {
+    return Devices.adbExecAsync(target, 'shell bash -c "ubuntu-app-launch  \\`ubuntu-app-triplet ' + appId + '\\`"').then(function () {
         Utils.popd();
     });
 }
