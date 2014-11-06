@@ -18,15 +18,16 @@
  * under the License.
  *
 */
+
 var path = require('path');
-var platform = require('./lib/ubuntu');
+var check_reqs = require('./lib/check_reqs').check_reqs;
+var PLATFORMS = require('./lib/constants').PLATFORM_TYPES;
+var run = require('./lib/run').run;
 
 var root = path.resolve();
 var www = path.join(root, 'www');
 
-var argv = require('optimist').boolean(['device', 'emulator', 'debug', 'nobuild']).string(['target', 'framework']).argv;
-
-platform.check_reqs(root).then(function () {
-    return platform.run(root, !argv.device, argv.debug, argv.target, argv.nobuild, argv.emulator, argv.framework);
-}).done();
-
+check_reqs(function () {
+    var argv = require('optimist').boolean(['device', 'emulator', 'debug', 'nobuild']).string(['target', 'framework']).argv;
+    return run(root, !argv.device, argv.debug, argv.target, argv.nobuild, argv.emulator, argv.framework);
+});

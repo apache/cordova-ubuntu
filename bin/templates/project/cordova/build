@@ -2,7 +2,7 @@
 
 /*
  *
- * Copyright 2013, 2014 Canonical Ltd.    
+ * Copyright 2013 Canonical Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,17 +18,16 @@
  * under the License.
  *
 */
+
 var path = require('path');
-var args = process.argv;
-var fs    = require('fs');
+var build = require('./lib/build').build;
+var check_reqs = require('./lib/check_reqs').check_reqs;
+var PLATFORMS = require('./lib/constants').PLATFORM_TYPES;
 
-var ROOT = path.join(__dirname, '..');
-var projectPath = args[2];
+var root = path.resolve();
+var www = path.join(root, 'www');
 
-var currentVersion = fs.readFileSync(path.join(projectPath, 'build', 'VERSION'), {encoding: "utf8"});
-var version = fs.readFileSync(path.join(ROOT, 'VERSION'), {encoding: "utf8"});
-if (version !== currentVersion) {
-    check_reqs(function () {
-        require('./lib/update').updateProject(projectPath, ROOT);
-    });
-}
+check_reqs(function () {
+    var argv = require('optimist').string(['framework']).argv;
+    return build(root, PLATFORMS.ALL, false, undefined, argv.framework, false);
+});
