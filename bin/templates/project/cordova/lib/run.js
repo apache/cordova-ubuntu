@@ -47,7 +47,7 @@ module.exports.run = function(rootDir, desktop, debug, target, nobuild, emulator
         var devices = Devices.list();
 
         if (!devices.length) {
-            console.error(MSG.UBUNTU_TOUCH_DEVICE_NOT_AVALIABLE.red)
+            console.error(MSG.UBUNTU_TOUCH_DEVICE_NOT_AVALAIBLE.red)
             process.exit(1);
         }
 
@@ -97,7 +97,7 @@ function runOnDevice(rootDir, debug, target, architecture, framework) {
     var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
 
     if (!Devices.isAttached(target)) {
-        console.error(MSG.UBUNTU_TOUCH_DEVICE_NOT_AVALIABLE.red);
+        console.error(MSG.UBUNTU_TOUCH_DEVICE_NOT_AVALAIBLE.red);
         process.exit(1);
     }
 
