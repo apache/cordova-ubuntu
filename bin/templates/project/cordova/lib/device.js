@@ -60,7 +60,7 @@ module.exports.arch = function (target) {
 
 function adbExec(target, command, options) {
     assert.ok(target && command);
-    return Utils.exec('adb -s ' + target + ' ' + command);
+    return Utils.execSync('adb -s ' + target + ' ' + command);
 }
 
 function adbExecAsync(target, command) {
