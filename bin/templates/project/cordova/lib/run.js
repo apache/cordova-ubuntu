@@ -124,6 +124,7 @@ function runOnDevice(rootDir, debug, target, architecture, framework) {
     assert.ok(names.length == 1);
 
     logger.info('Killing application if already running on your device.');
+
     Devices.adbExec(target, 'shell "ps -A -eo pid,cmd | grep cordova-ubuntu | awk \'{ print \\$1 }\' | xargs kill -9"');
 
     if (debug)
