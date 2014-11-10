@@ -48,12 +48,17 @@ module.exports.popd = function(dir) {
 module.exports.execSync = function(cmd, silent) {
     logger.debug(cmd);
 
-    silent = (typeof silent === 'boolean') ? silent : !config.inDebugMode();
+    silent = (typeof silent === 'boolean') ? silent : !config.inVerboseMode();
     var res = shell.exec(cmd, { silent: silent });
     if (res.code !== 0) {
         logger.error(cmd.green + " " + "FAILED".underline);
         logger.error(res.output);
-        logger.error('You can run with --debug to debug more easily.');
+
+        if (!config.inVerboseMode()) {
+            logger.warn('Try running the task again with --verbose for more logs.');
+            logger.warn('Example: cordova run -- --verbose');
+        }
+
         process.exit(1);
     }
 
@@ -64,13 +69,18 @@ module.exports.execAsync = function (cmd, silent) {
     logger.debug(cmd);
 
     var deferred = Q.defer();
-    silent = (typeof silent === 'boolean') ? silent : !config.inDebugMode();
+    silent = (typeof silent === 'boolean') ? silent : !config.inVerboseMode();
     shell.exec(cmd, { async: true, silent: silent }, function (code, output) {
         var res = { code: code, output: output };
         if (res.code !== 0) {
             logger.error(cmd.green + " " + "FAILED".underline);
             logger.error(res.output);
-            logger.error('You can run with --debug to debug more easily.')
+
+            if (!config.inVerboseMode()) {
+                logger.warn('Try running the task again with --verbose for more logs.');
+                logger.warn('Example: cordova run -- --verbose');
+            }
+
             process.exit(1);
         }
         deferred.resolve(res);

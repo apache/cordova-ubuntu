@@ -26,7 +26,7 @@ var config = require('./config');
  * Output debug messages in white. If not in verbose mode, nothing is output.
  */
 module.exports.debug = function (msg) {
-    if (config.inDebugMode()) {
+    if (config.inVerboseMode()) {
         console.log(msg);
     }
 };

@@ -23,21 +23,21 @@ var shellCfg = require('shelljs').config;
 
 /**
  * The configuration is used by other tasks to access shared properties, such as if the tasks are
- * running in debug mode (verbose).
+ * running in verbose mode (more logs, and outputs from various commands).
  */
 function Config() {
-    this._debug = false;
+    this._verbose = false;
     shellCfg.silent = true;
 }
 
 Config.prototype = {
-    debugMode: function () {
-        this._debug = true;
+    verboseMode: function () {
+        this._verbose = true;
         shellCfg.silent = false;
     },
 
-    inDebugMode: function () {
-        return this._debug;
+    inVerboseMode: function () {
+        return this._verbose;
     }
 };
 
