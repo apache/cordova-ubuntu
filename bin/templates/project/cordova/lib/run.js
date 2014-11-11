@@ -36,7 +36,6 @@ var MSG = Constants.MSG;
 
 module.exports.run = function(rootDir, desktop, debug, target, nobuild, emulator, framework) {
     if (desktop && !emulator) {
-        logger.info('Building Desktop Application...');
         return build(rootDir, PLATFORMS.DESKTOP, nobuild, null, null, debug).then(function () {
             logger.info('Build Successful. Running the application.');
             return runNative(rootDir, debug);
@@ -92,7 +91,7 @@ function runNative(rootDir, debug) {
     var cmd = 'QTWEBKIT_INSPECTOR_SERVER=9222 ./cordova-ubuntu www/';
     if (debug) {
         cmd = "DEBUG=1 " + cmd;
-        logger.info('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222');
+        logger.warn('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222');
     }
 
     logger.info('Launching the application.');
@@ -135,7 +134,7 @@ function runOnDevice(rootDir, debug, target, architecture, framework) {
     Devices.adbExec(target, 'shell "cd /home/phablet/; pkcon install-local ' + names[0] + ' -p --allow-untrusted -y"', {silent: false});
 
     if (debug) {
-        logger.info('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222');
+        logger.warn('Debug enabled. Try pointing a WebKit browser to http://127.0.0.1:9222');
         Devices.adbExec(target, 'forward tcp:9222 tcp:9222');
     }
 
