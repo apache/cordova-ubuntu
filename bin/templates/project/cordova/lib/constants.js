@@ -17,7 +17,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
- 
+
 module.exports = {
     'DEFAULT_FRAMEWORK': 'ubuntu-sdk-14.04',
     'DEFAULT_ARCH': 'armhf',
@@ -27,7 +27,7 @@ module.exports = {
         'ALL': 2
     },
     'MSG': {
-        'UBUNTU_TOUCH_DEVICE_NOT_AVALIABLE': 'UbuntuTouch device is not attached',
+        'UBUNTU_TOUCH_DEVICE_NOT_AVALAIBLE': 'UbuntuTouch device is not attached',
         'EMULATOR_IS_NOT_RUNNING': 'UbuntuTouch emulator is not running'
     }
 };

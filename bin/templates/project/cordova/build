@@ -28,6 +28,9 @@ var root = path.resolve();
 var www = path.join(root, 'www');
 
 check_reqs(function () {
-    var argv = require('optimist').string(['framework']).argv;
+    var argv = require('optimist').boolean(['verbose']).string(['framework']).argv;
+    if (argv.verbose) {
+      require('./lib/config').verboseMode();
+    }
     return build(root, PLATFORMS.ALL, false, undefined, argv.framework, false);
 });

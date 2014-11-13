@@ -22,9 +22,12 @@
 var assert = require('assert');
 var Utils = require('./utils');
 
-module.exports.list = function () {
-    var res = Utils.execSync('adb devices');
+var logger = require('./logger');
 
+module.exports.list = function () {
+    logger.info('Searching for connected devices');
+
+    var res = Utils.execSync('adb devices', false);
     var response = res.output.split('\n');
     var deviceList = [];
 
@@ -60,12 +63,14 @@ module.exports.arch = function (target) {
 
 function adbExec(target, command, options) {
     assert.ok(target && command);
-    return Utils.execSync('adb -s ' + target + ' ' + command);
+    options = options || {};
+    return Utils.execSync('adb -s ' + target + ' ' + command, options.silent);
 }
 
-function adbExecAsync(target, command) {
+function adbExecAsync(target, command, options) {
     assert.ok(target && command);
-    return Utils.execAsync('adb -s ' + target + ' ' + command);
+    options = options || {};
+    return Utils.execAsync('adb -s ' + target + ' ' + command, options.silent);
 }
 
 module.exports.adbExec = adbExec;
