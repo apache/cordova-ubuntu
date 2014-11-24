@@ -86,9 +86,6 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
     var cmakeCmd = 'click chroot -a ' + architecture + ' -f ' + framework + ' run cmake ' + campoDir
               + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"' + ' -DCMAKE_BUILD_TYPE=' + buildType;
 
-    if (framework == 'ubuntu-sdk-13.10')
-        cmakeCmd += ' -DCMAKE_TOOLCHAIN_FILE=/etc/dpkg-cross/cmake/CMakeCross.txt';
-
     var deps = additionalBuildDependencies(ubuntuDir).join(' ').replace(/ARCH/g, architecture);
     if (deps.length)
         cmakeCmd += ' -DADDITIONAL_DEPENDECIES="' + deps + '"';
@@ -111,10 +108,8 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
         fs.writeFileSync(path.join(prefixDir, 'manifest.json'), JSON.stringify(content));
 
         content = JSON.parse(fs.readFileSync(path.join(ubuntuDir, 'apparmor.json'), {encoding: "utf8"}));
-        if (framework == 'ubuntu-sdk-13.10')
-            content.policy_version = 1;
-        else
-            content.policy_version = 1.1;
+        content.policy_version = 1.2;
+        content.policy_groups.push('webview');
         fs.writeFileSync(path.join(prefixDir, 'apparmor.json'), JSON.stringify(content));
 
         Utils.pushd(prefixDir);
@@ -250,8 +245,6 @@ function additionalBuildDependencies(ubuntuDir) {
 function checkClickPackage(prefixDir) {
     Utils.pushd(prefixDir);
 
-    // 13.10 missing click-reviewers-tools package
-    // FIXME: remove this check after EOL
     if (fs.existsSync('/usr/bin/click-run-checks')) {
         var cmd = '/usr/bin/click-run-checks *.click';
         logger.debug(cmd);
