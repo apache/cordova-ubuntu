@@ -28,9 +28,12 @@ var root = path.resolve();
 var www = path.join(root, 'www');
 
 check_reqs(function () {
-    var argv = require('optimist').boolean(['verbose']).string(['framework']).argv;
+    var argv = require('optimist').boolean(['verbose', 'device']).string(['framework']).argv;
     if (argv.verbose) {
       require('./lib/config').verboseMode();
     }
-    return build(root, PLATFORMS.ALL, false, undefined, argv.framework, false);
+
+    var platform = (argv.device) ?  PLATFORMS.PHONE : PLATFORMS.DESKTOP;
+    
+    return build(root, platform, false, undefined, argv.framework, false);
 });
