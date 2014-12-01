@@ -84,7 +84,7 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
         buildType = '"Release"';
 
     var cmakeCmd = 'click chroot -a ' + architecture + ' -f ' + framework + ' run cmake ' + campoDir
-              + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"' + ' -DCMAKE_BUILD_TYPE=' + buildType;
+              + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"' + ' -DCMAKE_BUILD_TYPE=' + buildType +' -DUBUNTU_TOUCH="1"';
 
     var deps = additionalBuildDependencies(ubuntuDir).join(' ').replace(/ARCH/g, architecture);
     if (deps.length)
