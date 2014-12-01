@@ -39,9 +39,9 @@ static void customMessageOutput(QtMsgType type, const QMessageLogContext &, cons
 }
 
 int main(int argc, char *argv[]) {
-#ifndef NDEBUG
-    qputenv("QTWEBKIT_INSPECTOR_SERVER", "9222");
-#endif
+    printf("\nApache Cordova native platform version %s is starting\n\n", CORDOVA_UBUNTU_VERSION);
+    fflush(stdout);
+
     qInstallMessageHandler(customMessageOutput);
     QApplication app(argc, argv);
 
