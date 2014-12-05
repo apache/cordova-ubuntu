@@ -59,10 +59,10 @@ add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/qml
   DEPENDS ${PROJECT_BINARY_DIR}/main.qml
 )
 
-file(GLOB tmp Cordovaqt/*)
+file(GLOB tmp CordovaUbuntu/*)
 add_custom_command(
   OUTPUT ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION}
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Cordovaqt ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION}
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/CordovaUbuntu ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION}
   COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/libcordovaubuntuplugin.so ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION}
   COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/CordovaView.qml ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION}
   DEPENDS ${tmp} cordovaubuntuplugin ${PROJECT_BINARY_DIR}/CordovaView.qml
