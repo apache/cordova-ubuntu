@@ -62,7 +62,7 @@ add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/qml
 file(GLOB tmp CordovaUbuntu/*)
 add_custom_command(
   OUTPUT ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION}
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/CordovaUbuntu ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION}
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/CordovaUbuntu ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION}
   COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/libcordovaubuntuplugin.so ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION}
   COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/CordovaView.qml ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION}
   DEPENDS ${tmp} cordovaubuntuplugin ${PROJECT_BINARY_DIR}/CordovaView.qml
@@ -70,7 +70,7 @@ add_custom_command(
 file(GLOB tmp xml/*)
 add_custom_command(
   OUTPUT ${PROJECT_BINARY_DIR}/xml
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/xml ${PROJECT_BINARY_DIR}/xml
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/xml ${PROJECT_BINARY_DIR}/xml
   DEPENDS ${tmp} ${PROJECT_SOURCE_DIR}/xml
 )
 add_custom_target(copy_wwwqmlxml DEPENDS ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION} ${PROJECT_BINARY_DIR}/xml ${PROJECT_BINARY_DIR}/qml)
@@ -119,17 +119,6 @@ qt5_use_modules(coreplugins Widgets Location Sensors Feedback SystemInfo Contact
 
 target_link_libraries(cordova-ubuntu cordovaubuntuplugin)
 target_link_libraries(coreplugins cordovaubuntuplugin ${PLUGIN_DEPS_LIBRARIES})
-
-# Qt5's cmake does not export QT_IMPORTS_DIR, lets query qmake on our own for now
-get_target_property(QMAKE_EXECUTABLE Qt5::qmake LOCATION)
-function(QUERY_QMAKE VAR RESULT)
- exec_program(${QMAKE_EXECUTABLE} ARGS "-query ${VAR}" RETURN_VALUE return_code OUTPUT_VARIABLE output )
- if(NOT return_code)
- file(TO_CMAKE_PATH "${output}" output)
- set(${RESULT} ${output} PARENT_SCOPE)
- endif(NOT return_code)
-endfunction(QUERY_QMAKE)
-query_qmake(QT_INSTALL_QML QT_IMPORTS_DIR)
 
 install (TARGETS cordova-ubuntu DESTINATION ${CMAKE_INSTALL_PREFIX})
 install (TARGETS coreplugins DESTINATION ${CMAKE_INSTALL_PREFIX}/www)

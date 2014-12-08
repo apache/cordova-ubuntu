@@ -27,6 +27,7 @@ Window {
     width: 560
     height: 896
     CordovaView {
+        objectName: "cordovaView"
         width: parent.width
         height: parent.height
         wwwDir: www
