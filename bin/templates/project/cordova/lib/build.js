@@ -28,6 +28,7 @@ var shell = require('shelljs');
 
 var Constants = require('./constants');
 var Utils = require('./utils');
+var Manifest = require('./manifest');
 var logger = require('./logger');
 
 var PLATFORMS = Constants.PLATFORM_TYPES;
@@ -58,6 +59,8 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
     logger.info('Building Phone Application...');
 
     assert.ok(architecture && architecture.match(/^[a-z0-9_]+$/));
+
+    Manifest.generate(path.join(ubuntuDir, 'config.xml'), ubuntuDir);
 
     var archDir = path.join(ubuntuDir, framework, architecture);
     var prefixDir = path.join(archDir, 'prefix');
@@ -134,6 +137,8 @@ function buildNative(campoDir, ubuntuDir, nobuild, debug) {
     }
 
     checkEnv(ubuntuDir);
+
+    Manifest.generate(path.join(ubuntuDir, 'config.xml'), ubuntuDir);
 
     shell.rm('-rf', prefixDir);
 
