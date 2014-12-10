@@ -323,7 +323,7 @@ function checkChrootEnv(ubuntuDir, architecture, framework) {
     deps = deps.replace(/ARCH/g, architecture);
 
     var cmd = "click chroot -a " + architecture + " -f " + framework + " run dpkg-query -Wf'${db:Status-abbrev}' " + deps;
-    var res = Utils.execSync(cmd);
+    var res = shell.exec(cmd);
     if (res.code !== 0 || res.output.indexOf('un') !== -1) {
         logger.error("Error: missing " + architecture + " chroot");
         logger.error("run:\nsudo click chroot -a " + architecture + " -f " + framework + " create");
