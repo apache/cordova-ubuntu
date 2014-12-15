@@ -2,7 +2,7 @@
 
 /*
  *
- * Copyright 2013 Canonical Ltd.
+ * Copyright 2013, 2014 Canonical Ltd.    
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,16 @@
  *
 */
 var path = require('path');
-var platform = require('./lib/ubuntu');
+var args = process.argv;
+var fs    = require('fs');
 
-var root = path.resolve();
-var www = path.join(root, 'www');
+var ROOT = path.join(__dirname, '..');
+var projectPath = args[2];
 
-var argv = require('optimist').boolean(['device', 'emulator', 'debug', 'nobuild']).string(['target', 'framework']).argv;
-
-platform.check_reqs(root).then(function () {
-    return platform.run(root, !argv.device, argv.debug, argv.target, argv.nobuild, argv.emulator, argv.framework);
-}).done();
-
+var currentVersion = fs.readFileSync(path.join(projectPath, 'build', 'VERSION'), {encoding: "utf8"});
+var version = fs.readFileSync(path.join(ROOT, 'VERSION'), {encoding: "utf8"});
+if (version !== currentVersion) {
+    check_reqs(function () {
+        require('./lib/update').updateProject(projectPath, ROOT);
+    });
+}

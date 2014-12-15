@@ -16,21 +16,19 @@
  * under the License.
  *
 */
-import QtQuick 2.0
+import QtQuick 2.2
 import CordovaUbuntu @VERSION@
 
 Item {
     id: root
     property string wwwDir
-    property string contentFile
-    property bool disallowOverscroll
 
     property var mainWebview
+    property var cordovaObject: cordova
 
     Cordova {
         id: cordova
         wwwDir: root.wwwDir
-        contentFile: root.contentFile
     }
     Image {
         id: splashscreen
@@ -46,17 +44,15 @@ Item {
             root.mainWebview = loader.item.mainWebview
             cordova.parent = loader.item
 
-            loader.item.completed.connect(function(){
+            loader.item.completed.connect(function() {
                 loader.item.visible = true
                 loader.visible = true
                 splashscreen.visible = false
-
-                loader.item.disallowOverscroll = disallowOverscroll
             });
         }
     }
     Component.onCompleted: {
-        splashscreen.source = cordova.getSplashscreenPath(cordova, root.wwwDir)
+        splashscreen.source = cordova.getSplashscreenPath()
         loader.source = "CordovaViewInternal.qml"
     }
 }

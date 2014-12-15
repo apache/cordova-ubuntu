@@ -2,7 +2,7 @@
 
 /*
  *
- * Copyright 2013 Canonical Ltd.
+ * Copyright 2014 Canonical Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,26 @@
  *
 */
 
-module.exports = {
-    UBUNTU_TOUCH_DEVICE_NOT_AVALIABLE: 'UbuntuTouch device is not attached',
-    EMULATOR_IS_NOT_RUNNING: 'UbuntuTouch emulator is not running'
+var shellCfg = require('shelljs').config;
+
+/**
+ * The configuration is used by other tasks to access shared properties, such as if the tasks are
+ * running in verbose mode (more logs, and outputs from various commands).
+ */
+function Config() {
+    this._verbose = false;
+    shellCfg.silent = true;
+}
+
+Config.prototype = {
+    verboseMode: function () {
+        this._verbose = true;
+        shellCfg.silent = false;
+    },
+
+    inVerboseMode: function () {
+        return this._verbose;
+    }
 };
+
+module.exports = new Config();

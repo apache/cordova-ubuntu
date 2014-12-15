@@ -22,6 +22,7 @@
 #include <cassert>
 
 #include "cplugin.h"
+#include "cordova_config.hpp"
 
 class QQuickView;
 class QQuickItem;
@@ -31,7 +32,7 @@ class Cordova: public QObject {
     Q_PROPERTY(QString mainUrl READ mainUrl CONSTANT)
 
 public:
-    explicit Cordova(QDir wwwDir, QString contentFile, QQuickItem *item, QObject *parent = nullptr);
+    explicit Cordova(const QDir &wwwDir, QQuickItem *item, QObject *parent = nullptr);
 
     QString mainUrl() const;
     QObject *topLevelEventsReceiver();
@@ -41,6 +42,8 @@ public:
     void pushViewState(const QString &state);
     void popViewState(const QString &state);
     QString getSplashscreenPath();
+
+    const CordovaInternal::Config& config() const;
 
     template<typename A>
     QSharedPointer<CPlugin> getPlugin() {
@@ -73,6 +76,8 @@ private:
     QDir _www;
     QString _mainUrl;
     QList<QString> _states;
+    CordovaInternal::Config _config;
+
     Q_DISABLE_COPY(Cordova)
 };
 

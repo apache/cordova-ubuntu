@@ -26,9 +26,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}")
 
-file (STRINGS "VERSION" tmp)
-STRING(REGEX MATCH "^[0-9]+\\.[0-9]+" VERSION ${tmp})
-STRING(REGEX MATCH "^[0-9]+" MAJOR_VERSION ${tmp})
+file (STRINGS "VERSION" CORDOVA_VERSION)
+STRING(REGEX MATCH "^[0-9]+\\.[0-9]+" VERSION ${CORDOVA_VERSION})
+STRING(REGEX MATCH "^[0-9]+" MAJOR_VERSION ${VERSION})
 STRING(REGEX MATCH "[0-9]+$" MINOR_VERSION ${VERSION})
 
 configure_file (
@@ -40,7 +40,11 @@ configure_file (
   "${PROJECT_BINARY_DIR}/CordovaView.qml"
 )
 
-SET(CMAKE_CXX_FLAGS "-std=c++11 -fno-omit-frame-pointer -Wall -Wextra -DCORDOVA_UBUNTU_VERSION=\\\"${VERSION}\\\" -DCORDOVA_UBUNTU_MAJOR_VERSION=${MAJOR_VERSION} -DCORDOVA_UBUNTU_MINOR_VERSION=${MINOR_VERSION} -I ${PROJECT_SOURCE_DIR}/src")
+SET(CMAKE_CXX_FLAGS "-std=c++11 -fno-omit-frame-pointer -Wall -Wextra -DCORDOVA_UBUNTU_VERSION=\\\"${CORDOVA_VERSION}\\\" -DCORDOVA_UBUNTU_MAJOR_VERSION=${MAJOR_VERSION} -DCORDOVA_UBUNTU_MINOR_VERSION=${MINOR_VERSION} -I ${PROJECT_SOURCE_DIR}/src")
+
+if(UBUNTU_TOUCH STREQUAL "1")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUBUNTU_TOUCH")
+endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os")
@@ -55,10 +59,10 @@ add_custom_command(OUTPUT ${PROJECT_BINARY_DIR}/qml
   DEPENDS ${PROJECT_BINARY_DIR}/main.qml
 )
 
-file(GLOB tmp Cordovaqt/*)
+file(GLOB tmp CordovaUbuntu/*)
 add_custom_command(
   OUTPUT ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION}
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/Cordovaqt ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION}
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/CordovaUbuntu ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION}
   COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/libcordovaubuntuplugin.so ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION}
   COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/CordovaView.qml ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION}
   DEPENDS ${tmp} cordovaubuntuplugin ${PROJECT_BINARY_DIR}/CordovaView.qml
@@ -66,7 +70,7 @@ add_custom_command(
 file(GLOB tmp xml/*)
 add_custom_command(
   OUTPUT ${PROJECT_BINARY_DIR}/xml
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/xml ${PROJECT_BINARY_DIR}/xml
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/xml ${PROJECT_BINARY_DIR}/xml
   DEPENDS ${tmp} ${PROJECT_SOURCE_DIR}/xml
 )
 add_custom_target(copy_wwwqmlxml DEPENDS ${PROJECT_BINARY_DIR}/CordovaUbuntu.${VERSION} ${PROJECT_BINARY_DIR}/xml ${PROJECT_BINARY_DIR}/qml)
@@ -90,12 +94,16 @@ ADD_LIBRARY(cordovaubuntuplugin SHARED
   src/cplugin.cpp
   src/cordova.cpp
   src/qmlplugin.cpp
+  src/cordova_whitelist.cpp
+  src/cordova_config.cpp
 
   src/cordova.h
   src/cplugin.h
   src/qmlplugin.h
+  src/cordova_whitelist.hpp
+  src/cordova_config.hpp
 )
-qt5_use_modules(cordovaubuntuplugin Widgets Quick)
+qt5_use_modules(cordovaubuntuplugin Widgets Quick Xml)
 
 #TODO use subprojects
 file(GLOB_RECURSE PLUGIN_SOURCES src/plugins/*.cpp)
@@ -111,17 +119,6 @@ qt5_use_modules(coreplugins Widgets Location Sensors Feedback SystemInfo Contact
 
 target_link_libraries(cordova-ubuntu cordovaubuntuplugin)
 target_link_libraries(coreplugins cordovaubuntuplugin ${PLUGIN_DEPS_LIBRARIES})
-
-# Qt5's cmake does not export QT_IMPORTS_DIR, lets query qmake on our own for now
-get_target_property(QMAKE_EXECUTABLE Qt5::qmake LOCATION)
-function(QUERY_QMAKE VAR RESULT)
- exec_program(${QMAKE_EXECUTABLE} ARGS "-query ${VAR}" RETURN_VALUE return_code OUTPUT_VARIABLE output )
- if(NOT return_code)
- file(TO_CMAKE_PATH "${output}" output)
- set(${RESULT} ${output} PARENT_SCOPE)
- endif(NOT return_code)
-endfunction(QUERY_QMAKE)
-query_qmake(QT_INSTALL_QML QT_IMPORTS_DIR)
 
 install (TARGETS cordova-ubuntu DESTINATION ${CMAKE_INSTALL_PREFIX})
 install (TARGETS coreplugins DESTINATION ${CMAKE_INSTALL_PREFIX}/www)

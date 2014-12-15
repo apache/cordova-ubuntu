@@ -2,7 +2,7 @@
 
 /*
  *
- * Copyright 2013 Canonical Ltd.
+ * Copyright 2013, 2014 Canonical Ltd.    
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,4 @@
  *
 */
 
-var exec = require('child_process').exec;
-
-var deps = "cmake libicu-dev pkg-config qtbase5-dev qtchooser qtdeclarative5-dev qtfeedback5-dev qtlocation5-dev qtmultimedia5-dev qtpim5-dev qtsensors5-dev qtsystems5-dev";
-
-exec("dpkg-query -Wf'${db:Status-abbrev}\\n' click " + deps, function(error, stdout, stderr) {
-    if (error || stdout.indexOf('un') !== -1) {
-        console.error("Error: missing dependency " + deps);
-        process.exit(2);
-    }
-});
-
+require('./lib/check_reqs').check_reqs();

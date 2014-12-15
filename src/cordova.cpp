@@ -24,13 +24,15 @@
 #include <QQuickItem>
 #include <QQmlContext>
 
-Cordova::Cordova(QDir wwwDir, QString contentFile, QQuickItem *item, QObject *parent): QObject(parent), _item(item), _www(wwwDir) {
+Cordova::Cordova(const QDir &wwwDir, QQuickItem *item, QObject *parent)
+    : QObject(parent), _item(item), _www(wwwDir), _config(_www.absoluteFilePath("../config.xml")) {
+
     qDebug() << "Using" << _www.absolutePath() << "as working dir";
 
-    if (!_www.exists(contentFile))
-        qCritical() << contentFile << "does not exists";
+    if (!_www.exists(_config.content()))
+        qCritical() << _config.content() << "does not exists";
 
-    _mainUrl = QUrl::fromUserInput(_www.absoluteFilePath(contentFile)).toString();
+    _mainUrl = QUrl::fromUserInput(_www.absoluteFilePath(_config.content())).toString();
 
     qDebug() << _mainUrl;
 }
@@ -74,6 +76,10 @@ QString Cordova::getSplashscreenPath() {
     if (!images.empty())
       return images.first().path;
     return "";
+}
+
+const CordovaInternal::Config& Cordova::config() const {
+    return _config;
 }
 
 void Cordova::initPlugins() {
@@ -124,7 +130,7 @@ QString Cordova::mainUrl() const {
 }
 
 QObject *Cordova::topLevelEventsReceiver() {
-    return dynamic_cast<QQuickView*>(_item->window());
+    return dynamic_cast<QQuickWindow*>(_item->window());
 }
 
 QQuickItem *Cordova::rootObject() {
@@ -132,7 +138,7 @@ QQuickItem *Cordova::rootObject() {
 }
 
 void Cordova::setTitle(const QString &title) {
-    dynamic_cast<QQuickView*>(_item->window())->setTitle(title);
+    dynamic_cast<QQuickWindow*>(_item->window())->setTitle(title);
 }
 
 void Cordova::pushViewState(const QString &state) {

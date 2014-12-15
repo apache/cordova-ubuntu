@@ -1,6 +1,8 @@
+#!/usr/bin/env node
+
 /*
  *
- * Copyright 2013 Canonical Ltd.
+ * Copyright 2014 Canonical Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +16,18 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- *
-*/
-#include "qmlplugin.h"
+ */
 
-void CordovaUbuntuPlugin::registerTypes(const char *) {
-    qmlRegisterType<CordovaWrapper>("CordovaUbuntu", CORDOVA_UBUNTU_MAJOR_VERSION, CORDOVA_UBUNTU_MINOR_VERSION, "Cordova");
-    qmlRegisterUncreatableType<CordovaInternal::Config>("CordovaUbuntu", CORDOVA_UBUNTU_MAJOR_VERSION, CORDOVA_UBUNTU_MINOR_VERSION, "Config", "...");
-}
+module.exports = {
+    'DEFAULT_FRAMEWORK': 'ubuntu-sdk-14.10',
+    'DEFAULT_ARCH': 'armhf',
+    'PLATFORM_TYPES': {
+        'PHONE': 0,
+        'DESKTOP': 1,
+        'ALL': 2
+    },
+    'MSG': {
+        'UBUNTU_TOUCH_DEVICE_NOT_AVALAIBLE': 'UbuntuTouch device is not attached',
+        'EMULATOR_IS_NOT_RUNNING': 'UbuntuTouch emulator is not running'
+    }
+};

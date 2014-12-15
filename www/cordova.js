@@ -278,7 +278,7 @@ var cordova = {
         try {
             cordova.callbackFromNative(callbackId, false, args.status, [args.message], args.keepCallback);
         } catch (e) {
-            console.log("Error in error callback: " + callbackId + " = "+e);
+            console.log("Error in success callback: " + callbackId + " = "+e);
         }
     },
 
@@ -846,6 +846,7 @@ cordova.callbackWithoutRemove = function() {
     if (typeof(callbackRef) == "function") callbackRef.apply(this, parameters);
 };
 
+var _initialized = false;
 function ubuntuExec(success, fail, service, action, args) {
     if (callbackId % 2) {
         callbackId++;
@@ -859,7 +860,14 @@ function ubuntuExec(success, fail, service, action, args) {
     args.unshift(ecId);
     args.unshift(scId);
 
-    navigator.qt.postMessage(JSON.stringify({messageType: "callPluginFunction", plugin: service, func: action, params: args}));
+    if (!_initialized) {
+        _initialized = true;
+        window.oxide.addMessageHandler("EXECUTE", function (msg) {
+            eval(msg.args.code);
+        });
+    }
+
+    oxide.sendMessage("from-cordova", {messageType: "callPluginFunction", plugin: service, func: action, params: args});
 }
 module.exports = ubuntuExec;
 
