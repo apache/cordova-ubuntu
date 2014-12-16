@@ -20,6 +20,14 @@
 -->
 ## Release Notes for Cordova Ubuntu ##
 
+### 4.0.0 ###
+
+* port to oxide
+* implement uri whitelist
+* set ubuntu-sdk-14.10 as default framework
+* ubuntu 14.10 support
+* code cleanups
+
 ### 3.6.0 ###
 
 * Set VERSION to 3.6.0 (via coho)
