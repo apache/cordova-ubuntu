@@ -1,5 +1,5 @@
 module CordovaUbuntu
 plugin cordovaubuntuplugin
-CordovaView 3.0 CordovaView.qml
-CordovaViewInternal 3.0 CordovaViewInternal.qml
+CordovaView 4.0 CordovaView.qml
+CordovaViewInternal 4.0 CordovaViewInternal.qml
 
