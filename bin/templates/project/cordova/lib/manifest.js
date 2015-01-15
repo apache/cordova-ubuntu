@@ -50,11 +50,18 @@ module.exports = {
     },
 
     generateManifest: function(config, dir) {
+        var hooks = { cordova: { desktop: 'cordova.desktop',
+                                 apparmor: 'apparmor.json' } };
+
+        config.etree.getroot().findall('./feature/param').forEach(function (element) {
+            if (element.attrib.hook)
+                hooks.cordova[element.attrib.hook] = element.attrib.value;
+        });
+
         var manifest = { name: config.id(),
                          version: config.version(),
                          title: config.name(),
-                         hooks: { cordova: { desktop: 'cordova.desktop',
-                                             apparmor: 'apparmor.json' } },
+                         hooks: hooks,
                          maintainer: sanitize(config.author())  + ' <' + config.email() + '>',
                          description: sanitize(config.description()) };
 
