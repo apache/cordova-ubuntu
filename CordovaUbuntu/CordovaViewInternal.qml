@@ -22,7 +22,7 @@ import "cordova_wrapper.js" as CordovaWrapper
 import Ubuntu.Components 0.1
 import Ubuntu.Components.Popups 0.1
 
-Item {
+OrientationHelper {
     id: root
 
     anchors.fill: parent

@@ -39,6 +39,7 @@ Config::Config(const QString &xmlConfig) {
 
     _fullscreen = false;
     _disallowOverscroll = false;
+    _orientation = DEFAULT_ORIENTATION;
     nodes = config.documentElement().elementsByTagName("preference");
     for (int i = 0; i < nodes.size(); ++i) {
         QDomNode node = nodes.at(i);
@@ -50,6 +51,12 @@ Config::Config(const QString &xmlConfig) {
             _fullscreen = value == "true";
         if (name == "DisallowOverscroll")
             _disallowOverscroll = value == "true";
+        if (name == "Orientation") {
+            if (value == "landscape")
+                _orientation = LANDSCAPE;
+            if (value == "portrait")
+                _orientation = PORTRAIT;
+        }
     }
 
     _content = "index.html";
@@ -64,6 +71,11 @@ Config::Config(const QString &xmlConfig) {
 
     _appId = config.documentElement().attribute("id");
     _appVersion = config.documentElement().attribute("version");
+
+}
+
+int Config::orientation() const {
+    return _orientation;
 }
 
 const WhiteList& Config::whitelist() const {

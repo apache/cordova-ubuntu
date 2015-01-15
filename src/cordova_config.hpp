@@ -24,6 +24,12 @@ namespace CordovaInternal {
     class Config: public QObject {
         Q_OBJECT
     public:
+        enum Orientation {
+            DEFAULT_ORIENTATION = 0,
+            LANDSCAPE = 1,
+            PORTRAIT = 2
+        };
+
         explicit Config(const QString &xmlConfig);
 
         const WhiteList& whitelist() const;
@@ -34,11 +40,15 @@ namespace CordovaInternal {
 
         bool disallowOverscroll() const;
         Q_INVOKABLE bool fullscreen() const;
+
+        Q_INVOKABLE int orientation() const;
     private:
         WhiteList _whitelist;
         QString _content;
         QString _appId, _appVersion;
         bool _fullscreen, _disallowOverscroll;
+
+        Orientation _orientation;
 
         Q_DISABLE_COPY(Config);
     };

@@ -45,6 +45,16 @@ Item {
             cordova.parent = loader.item
 
             loader.item.completed.connect(function() {
+                if (cordova.config().orientation() == 0) {
+                    loader.item.automaticOrientation = true
+                } else {
+                    loader.item.automaticOrientation = true
+                    if (cordova.config().orientation() == 1)
+                        loader.item.orientationAngle = 90
+                    else
+                        loader.item.orientationAngle = 0
+                }
+
                 loader.item.visible = true
                 loader.visible = true
                 splashscreen.visible = false
