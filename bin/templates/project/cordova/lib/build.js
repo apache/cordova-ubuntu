@@ -72,28 +72,27 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
         return Q();
     }
 
-    checkChrootEnv(ubuntuDir, architecture, framework);
+    return checkChrootEnv(ubuntuDir, architecture, framework).then(function() {
+        shell.rm('-rf', path.join(archDir, 'build'));
 
-    shell.rm('-rf', path.join(archDir, 'build'));
+        shell.rm('-rf', prefixDir);
+        shell.mkdir(path.join(archDir, 'build'));
+        shell.mkdir(prefixDir);
 
-    shell.rm('-rf', prefixDir);
-    shell.mkdir(path.join(archDir, 'build'));
-    shell.mkdir(prefixDir);
+        Utils.pushd(path.join(archDir, 'build'));
 
-    Utils.pushd(path.join(archDir, 'build'));
+        var buildType = '"Debug"';
+        if (!debug)
+            buildType = '"Release"';
 
-    var buildType = '"Debug"';
-    if (!debug)
-        buildType = '"Release"';
+        var cmakeCmd = 'click chroot -a ' + architecture + ' -f ' + framework + ' run cmake ' + campoDir
+            + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"' + ' -DCMAKE_BUILD_TYPE=' + buildType +' -DUBUNTU_TOUCH="1"';
 
-    var cmakeCmd = 'click chroot -a ' + architecture + ' -f ' + framework + ' run cmake ' + campoDir
-              + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"' + ' -DCMAKE_BUILD_TYPE=' + buildType +' -DUBUNTU_TOUCH="1"';
-
-    var deps = additionalBuildDependencies(ubuntuDir).join(' ').replace(/ARCH/g, architecture);
-    if (deps.length)
-        cmakeCmd += ' -DADDITIONAL_DEPENDECIES="' + deps + '"';
-
-    return Utils.execAsync(cmakeCmd).then(function () {
+        var deps = additionalBuildDependencies(ubuntuDir).join(' ').replace(/ARCH/g, architecture);
+        if (deps.length)
+            cmakeCmd += ' -DADDITIONAL_DEPENDECIES="' + deps + '"';
+        return Utils.execAsync(cmakeCmd);
+    }).then(function () {
         if (architecture != "i386")
             Utils.execSync('find . -name AutomocInfo.cmake | xargs sed -i \'s;AM_QT_MOC_EXECUTABLE .*;AM_QT_MOC_EXECUTABLE "/usr/lib/\'$(dpkg-architecture -qDEB_BUILD_MULTIARCH)\'/qt5/bin/moc");\'');
         return Utils.execAsync('click chroot -a ' + architecture + ' -f ' + framework + ' run make -j ' + cpuCount());
@@ -323,13 +322,40 @@ function checkChrootEnv(ubuntuDir, architecture, framework) {
     deps = deps.replace(/ARCH/g, architecture);
 
     var cmd = "click chroot -a " + architecture + " -f " + framework + " run dpkg-query -Wf'${db:Status-abbrev}' " + deps;
+
+    var chrootCreateCmd = "sudo click chroot -a " + architecture + " -f " + framework + " create";
+    var chrootInstallCmd = "sudo click chroot -a " + architecture + " -f " + framework + " install " + deps;
+
     var res = shell.exec(cmd);
-    if (res.code !== 0 || res.output.indexOf('un') !== -1) {
-        logger.error("Error: missing " + architecture + " chroot");
-        logger.error("run:\nsudo click chroot -a " + architecture + " -f " + framework + " create");
-        logger.error("sudo click chroot -a " + architecture + " -f " + framework + " install " + deps);
-        process.exit(1);
+    if (res.code !== 0 || res.output.match(/[^i ]/)) {
+        logger.error("\nError: missing " + architecture + " chroot");
+        logger.error("run:\n" + chrootCreateCmd);
+        logger.error(chrootInstallCmd);
+
+        var deferred = Q.defer();
+
+        var readline = require('readline');
+        var rl = readline.createInterface(process.stdin, process.stdout);
+        rl.setPrompt('Do you want install it now? (Yn)> ');
+        rl.prompt();
+
+        rl.on('line', function(line) {
+            rl.close();
+            if (line !== 'Y' && line !== 'y') {
+                deferred.reject(new Error());
+                return;
+            }
+
+            Utils.execAsync(chrootInstallCmd).then(function() {
+                deferred.resolve();
+            }).catch(function (error) {
+                deferred.reject(new Error());
+            }).done();
+        });
+
+        return deferred.promise;
     }
+    return Q();
 }
 
 function additionalDependencies(ubuntuDir) {
