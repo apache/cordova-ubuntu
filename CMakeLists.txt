@@ -115,7 +115,7 @@ ADD_LIBRARY(coreplugins SHARED
   ${PLUGIN_SOURCES}
   ${PLUGIN_HEADERS}
 )
-qt5_use_modules(coreplugins Widgets Location Sensors Feedback SystemInfo Contacts Multimedia Quick MultimediaWidgets)
+qt5_use_modules(coreplugins Widgets Location Sensors Feedback SystemInfo Contacts Multimedia Quick MultimediaWidgets SerialPort)
 
 target_link_libraries(cordova-ubuntu cordovaubuntuplugin)
 target_link_libraries(coreplugins cordovaubuntuplugin ${PLUGIN_DEPS_LIBRARIES})
