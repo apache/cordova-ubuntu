@@ -57,6 +57,10 @@ OrientationHelper {
                     request.action = NavigationRequest.ActionReject;
             }
 
+            popupMenu: ItemSelector {
+                automaticOrientation: false
+            }
+
             preferences.remoteFontsEnabled: true
             preferences.javascriptCanAccessClipboard: true
             preferences.canDisplayInsecureContent: true
