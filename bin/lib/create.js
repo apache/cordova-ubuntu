@@ -56,6 +56,7 @@ exports.createProject = function(projectPath, packageName, projectName) {
 
     shell.mkdir(path.join(projectPath, 'www'));
     shell.cp(path.join(ROOT, 'www', 'cordova.js'), path.join(projectPath, 'www'));
+    shell.cp('-rf', path.join(ROOT, 'cordova-js-src'), path.join(projectPath, 'platform_www'));
 
     shell.cp('-r', path.join(ROOT, 'xml/config.xml'), projectPath);
 } 
