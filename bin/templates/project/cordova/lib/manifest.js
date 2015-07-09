@@ -49,7 +49,7 @@ module.exports = {
         if (config.icon() && fs.existsSync(path.join(dir, '../..', config.icon()))) {
             Utils.cp(path.join(dir, '../..', config.icon()), path.join(dir, 'www'));
 
-            content += '\nIcon=www/' + config.icon();
+            content += '\nIcon=www/' + path.basename(config.icon());
         } else {
             logger.error("Missing icon");
             process.exit(1);
