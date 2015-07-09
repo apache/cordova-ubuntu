@@ -93,7 +93,7 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
             cmakeCmd += ' -DADDITIONAL_DEPENDECIES="' + deps + '"';
         return Utils.execAsync(cmakeCmd);
     }).then(function () {
-        if (architecture != "i386")
+        if (architecture != "i386" && framework != "ubuntu-sdk-15.04")
             Utils.execSync('find . -name AutomocInfo.cmake | xargs sed -i \'s;AM_QT_MOC_EXECUTABLE .*;AM_QT_MOC_EXECUTABLE "/usr/lib/\'$(dpkg-architecture -qDEB_BUILD_MULTIARCH)\'/qt5/bin/moc");\'');
         return Utils.execAsync('click chroot -a ' + architecture + ' -f ' + framework + ' run make -j ' + cpuCount());
     }).then(function () {
