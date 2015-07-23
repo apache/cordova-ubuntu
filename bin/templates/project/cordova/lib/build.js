@@ -110,7 +110,11 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
         fs.writeFileSync(path.join(prefixDir, 'manifest.json'), JSON.stringify(content));
 
         content = JSON.parse(fs.readFileSync(path.join(ubuntuDir, 'apparmor.json'), {encoding: "utf8"}));
-        content.policy_version = 1.2;
+        if (framework === "ubuntu-sdk-14.10") {
+            content.policy_version = 1.2;
+        } else {
+            content.policy_version = 1.3;
+        }
         content.policy_groups.push('webview');
         fs.writeFileSync(path.join(prefixDir, 'apparmor.json'), JSON.stringify(content));
 
