@@ -325,16 +325,28 @@ function checkChrootEnv(ubuntuDir, architecture, framework) {
     deps += additionalDependencies(ubuntuDir).join(' ');
     deps = deps.replace(/ARCH/g, architecture);
 
-    var cmd = "click chroot -a " + architecture + " -f " + framework + " run dpkg-query -Wf'${db:Status-abbrev}' " + deps;
-
     var chrootCreateCmd = "sudo click chroot -a " + architecture + " -f " + framework + " create";
     var chrootInstallCmd = "sudo click chroot -a " + architecture + " -f " + framework + " install " + deps;
 
+    var cmd = "click chroot -a " + architecture + " -f " + framework + " run echo 1";
     var res = shell.exec(cmd);
-    if (res.code !== 0 || res.output.match(/[^i ]/)) {
+
+    if (res.code !== 0) {
         logger.error("\nError: missing " + architecture + " chroot");
         logger.error("run:\n" + chrootCreateCmd);
-        logger.error(chrootInstallCmd);
+
+        var deferred = Q.defer();
+        deferred.reject(new Error());
+
+        return deferred.promise;
+    }
+
+    cmd = "click chroot -a " + architecture + " -f " + framework + " run dpkg-query -Wf'${db:Status-abbrev}' " + deps;
+
+    res = shell.exec(cmd);
+    if (res.code !== 0 || res.output.match(/[^i ]/)) {
+        logger.error("\nError: missing dependency inside " + architecture + " chroot");
+        logger.error("run:\n" + chrootInstallCmd);
 
         var deferred = Q.defer();
 
