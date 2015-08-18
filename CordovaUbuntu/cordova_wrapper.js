@@ -46,6 +46,10 @@ function execMethod(pluginName, functionName, params) {
     if (typeof pluginObjects[pluginName][functionName] != "function")
         return false;
 
+    //  Extract the success callback id and failure callback ids sent by the plugin side
+    var scId = params.shift();
+    var ecId = params.shift();
+
     pluginObjects[pluginName][functionName].apply(this, params);
     return true;
 }
