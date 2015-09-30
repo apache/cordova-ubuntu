@@ -22,6 +22,7 @@
 
 #include "../src/cplugin.h"
 #include "../src/cordova_config.hpp"
+#include "../src/cordova.h"
 
 TEST(CordovaInternal, format_double_int_int) {
     auto t = std::make_tuple(1.1, 2, 3);
@@ -82,6 +83,19 @@ TEST(Cordova, WhiteList) {
     timer.start(1000);
 
     EXPECT_EQ(app.exec(), 0);
+}
+
+TEST(Cordova, loadURLSupport) {
+
+    CordovaInternal::Config config("config.xml");    
+    QDir www("www");
+    QQuickItem item;;
+
+    Cordova *cordova = new Cordova(www, &item, NULL);
+
+    EXPECT_TRUE(cordova != NULL);
+    EXPECT_STREQ("http://192.168.1.35:8100",
+		 cordova->mainUrl().toLatin1().data());
 }
 
 int main(int argc, char** argv) {
