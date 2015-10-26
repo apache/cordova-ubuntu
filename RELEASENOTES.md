@@ -20,6 +20,31 @@
 -->
 ## Release Notes for Cordova Ubuntu ##
 
+### 4.1.0 ###
+
+* CB-8965 Copy cordova-js-src directory to platform folder during create. This closes #11
+* add default icon
+* build: split error message
+* use 1.3 policy_version for ubuntu-sdk-15.04+
+* fix desktop file generator
+* support ubuntu-sdk-15.04
+* CordovaViewInternal: provide ItemSelector for oxide
+* build: misc fix
+* build: suggest to install dependencies automatically
+* support Orientation preference from config.xml
+* add custom hooks into manifest.js
+* CB-8417 moved platform specific js into platform
+* Update JS snapshot to version 4.1.0-dev (via coho)
+* Set VERSION to 4.1.0-dev (via coho)
+
+### 4.0.0 ###
+
+* port to oxide
+* implement uri whitelist
+* set ubuntu-sdk-14.10 as default framework
+* ubuntu 14.10 support
+* code cleanups
+
 ### 3.6.0 ###
 
 * Set VERSION to 3.6.0 (via coho)
