@@ -26,6 +26,7 @@ var Q = require('q');
 var path = require('path');
 var shell = require('shelljs');
 
+var ConfigParser = require('./config_parser');
 var Constants = require('./constants');
 var Utils = require('./utils');
 var Manifest = require('./manifest');
@@ -233,19 +234,13 @@ function fillTemplate(source, dest, obj) {
 }
 
 function additionalBuildDependencies(ubuntuDir) {
-    var files = [];
-    try {
-        files = fs.readdirSync(path.join(ubuntuDir, 'configs')).filter(function(s) {
-            return s[0] != '.';
-        });
-    } catch (e) {}
+    var config = new ConfigParser(path.join(ubuntuDir, 'config.xml'));
 
     var pkgConfig = [];
-    for (var i = 0; i < files.length; i++) {
-        var config = JSON.parse(fs.readFileSync(path.join(ubuntuDir, 'configs', files[i])));
-        if (config.pkgConfig)
-            pkgConfig = pkgConfig.concat(config.pkgConfig);
-    }
+    config.etree.getroot().findall('./feature/deps/pkgConfig').forEach(function (element) {
+        var list = JSON.parse(element.text);
+        pkgConfig = pkgConfig.concat(list);
+    });
 
     return pkgConfig;
 }
@@ -375,17 +370,13 @@ function checkChrootEnv(ubuntuDir, architecture, framework) {
 }
 
 function additionalDependencies(ubuntuDir) {
-    var files = [];
-    try {
-        files = fs.readdirSync(path.join(ubuntuDir, 'configs')).filter(function(s) {
-            return s[0] != '.';
-        });
-    } catch (e) {}
+    var config = new ConfigParser(path.join(ubuntuDir, 'config.xml'));
+
     var deb = [];
-    for (var i = 0; i < files.length; i++) {
-        var config = JSON.parse(fs.readFileSync(path.join(ubuntuDir, 'configs', files[i])));
-        if (config.deb)
-            deb = deb.concat(config.deb);
-    }
+    config.etree.getroot().findall('./feature/deps/deb').forEach(function (element) {
+        var list = JSON.parse(element.text);
+        deb = deb.concat(list);
+    });
+
     return deb;
 }
