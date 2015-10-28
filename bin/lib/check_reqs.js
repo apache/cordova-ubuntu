@@ -21,41 +21,16 @@
 
 var exec = require('child_process').exec;
 
-var DEPENDENCIES = [
-    'click',
-    'cmake', 
-    'libicu-dev', 
-    'pkg-config', 
-    'devscripts', 
-    'qtbase5-dev', 
-    'qtchooser', 
-    'qtdeclarative5-dev', 
-    'qtfeedback5-dev', 
-    'qtlocation5-dev', 
-    'qtmultimedia5-dev', 
-    'qtpim5-dev', 
-    'libqt5sensors5-dev', 
-    'qtsystems5-dev'
-];
-
 exports.check_reqs = function (callback) {
     if (!checkNodeDependencies()) {
         installNodeDependencies(checkUbuntuDependencies.bind(null, callback));
     } else {
-        checkUbuntuDependencies(callback);
+	// don't check platform dependeicies yet, as they depend on the target
+	// architecture; the base cordova / node / npm install should be
+	// sufficient at this stage
+        callback();
     }
 };
-
-function checkUbuntuDependencies(callback) {
-    var deps = DEPENDENCIES.join(' ');
-    exec("dpkg-query -Wf'${db:Status-abbrev}\\n'" + deps, function (error, stdout, stderr) {
-        if (error !== null) {
-            console.error('Error: missing dependency ' + deps);
-            process.exit(1);
-        }
-        callback();
-    });
-}
 
 function checkNodeDependencies() {
     try {
