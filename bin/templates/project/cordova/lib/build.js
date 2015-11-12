@@ -213,8 +213,8 @@ function buildNative(campoDir, ubuntuDir, nobuild, debug) {
             for (var i = 0; i < templates.length; i++) {
 		fillTemplate(templates[i].source, templates[i].dest, props);
             }
-            logger.warn('In order to build debian package, execute: ');
-            logger.warn('cd ' + debDir + '; ' + 'debuild');
+            logger.warn('Note: to build a debian package, run: ');
+            logger.warn(' cd ' + debDir + '; ' + 'debuild');
 	});
     });
 };
