@@ -25,16 +25,21 @@
 #include <QQmlContext>
 
 Cordova::Cordova(const QDir &wwwDir, QQuickItem *item, QObject *parent)
-    : QObject(parent), _item(item), _www(wwwDir), _config(_www.absoluteFilePath("../config.xml")) {
+    : QObject(parent), _item(item), _www(wwwDir),
+      _config(_www.absoluteFilePath("../config.xml")) {
 
-    qDebug() << "Using" << _www.absolutePath() << "as working dir";
+    qDebug() << "Work directory: " << _www.absolutePath();
 
-    if (!_www.exists(_config.content()))
-        qCritical() << _config.content() << "does not exists";
+    if (_config.content().contains(QRegExp("^(http://)"))) {
+        _mainUrl = QString(_config.content());
+    } else if (!_www.exists(_config.content())) {
+        qCritical() << _config.content() << "does not exist";
+    } else {
+        _mainUrl = QUrl::fromUserInput(_www.absoluteFilePath(_config.content()))
+	  .toString();
+    }
 
-    _mainUrl = QUrl::fromUserInput(_www.absoluteFilePath(_config.content())).toString();
-
-    qDebug() << _mainUrl;
+    qDebug() << "Main URL: " << _mainUrl;
 }
 
 void Cordova::appLoaded() {
@@ -79,8 +84,8 @@ QString Cordova::getSplashscreenPath() {
 }
 
 const CordovaInternal::Config& Cordova::config() const {
-    return _config;
-}
+    return _config;}
+
 
 void Cordova::initPlugins() {
     QList<QDir> searchPath = {get_app_dir()};
