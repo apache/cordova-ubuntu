@@ -25,7 +25,7 @@ exports.check_reqs = function (callback) {
     if (!checkNodeDependencies()) {
         installNodeDependencies(checkUbuntuDependencies.bind(null, callback));
     } else {
-	// don't check platform dependeicies yet, as they depend on the target
+	// don't check platform dependencies yet, as they depend on the target
 	// architecture; the base cordova / node / npm install should be
 	// sufficient at this stage
         callback();
