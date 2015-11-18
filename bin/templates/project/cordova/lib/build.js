@@ -131,7 +131,7 @@ function buildClickPackage(campoDir, ubuntuDir, nobuild, architecture, framework
 }
 
 function buildNative(campoDir, ubuntuDir, nobuild, debug) {
-    logger.info('Building Desktop Application...');
+    logger.info('Building...');
 
     var nativeDir = path.join(ubuntuDir, 'native');
     var prefixDir = path.join(nativeDir, 'prefix');
@@ -140,85 +140,87 @@ function buildNative(campoDir, ubuntuDir, nobuild, debug) {
         return Q();
     }
 
-    checkEnv(ubuntuDir);
+    return checkEnv(ubuntuDir).then(function() {
+	Manifest.generate(path.join(ubuntuDir, 'config.xml'), ubuntuDir);
 
-    Manifest.generate(path.join(ubuntuDir, 'config.xml'), ubuntuDir);
+	shell.rm('-rf', prefixDir);
 
-    shell.rm('-rf', prefixDir);
+	shell.mkdir('-p', path.join(nativeDir, 'build'));
+	shell.mkdir(prefixDir);
 
-    shell.mkdir('-p', path.join(nativeDir, 'build'));
-    shell.mkdir(prefixDir);
+	Utils.pushd(path.join(nativeDir, 'build'));
 
-    Utils.pushd(path.join(nativeDir, 'build'));
+	var buildType = '"Debug"';
+	if (!debug)
+            buildType = '"Release"';
 
-    var buildType = '"Debug"';
-    if (!debug)
-        buildType = '"Release"';
-
-    var cmakeCmd = 'cmake ' + campoDir + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"'
+	var cmakeCmd = 'cmake ' + campoDir + ' -DCMAKE_INSTALL_PREFIX="' + prefixDir + '"'
         + ' -DCMAKE_BUILD_TYPE=' + buildType;
 
-    var deps = additionalBuildDependencies(ubuntuDir).join(' ').replace(/ARCH/g, '');
-    if (deps.length)
-        cmakeCmd += ' -DADDITIONAL_DEPENDECIES="' + deps + '"';
+	var deps = additionalBuildDependencies(ubuntuDir).join(' ').replace(/ARCH/g, '');
+	if (deps.length)
+            cmakeCmd += ' -DADDITIONAL_DEPENDECIES="' + deps + '"';
 
-    var debDir;
-    return Utils.execAsync(cmakeCmd).then(function () {
-        return Utils.execAsync('make -j ' + cpuCount() + '; make install');
-    }).then(function () {
-        Utils.cp(path.join(ubuntuDir, 'config.xml'), prefixDir);
-        Utils.cp(path.join(ubuntuDir, 'www', '*'), path.join(prefixDir, 'www'));
-        Utils.cp(path.join(ubuntuDir, 'qml', '*'), path.join(prefixDir, 'qml'));
-
-        Utils.popd();
-
-        var manifest = JSON.parse(fs.readFileSync(path.join(ubuntuDir, 'manifest.json'), {encoding: "utf8"}));
-
-        assert(manifest.name.length);
-        assert(manifest.name.indexOf(' ') == -1);
-
-        debDir = path.join(nativeDir, manifest.name);
-
-        shell.rm('-rf', debDir);
-
-        shell.mkdir('-p', path.join(debDir, 'debian'));
-        Utils.cp(path.join(campoDir, '*'), debDir);
-
-        Utils.cp(path.join(ubuntuDir, 'config.xml'), path.join(debDir, 'debian'));
-        Utils.cp(path.join(ubuntuDir, 'www', '*'), path.join(debDir, 'www'));
-        Utils.cp(path.join(ubuntuDir, 'qml', '*'), path.join(debDir, 'qml'));
-
-        var destDir = path.join('/opt', manifest.name);
-
-        var icon = fs.readFileSync(path.join(ubuntuDir, 'cordova.desktop'), {encoding: "utf8"}).match(/^Icon=(.+)$/m);
-        icon = icon ? '/opt/' + manifest.name + '/' + icon[1] : 'qmlscene';
-
-        var maintainerEmail = manifest.maintainer.match('<.+>$');
-        maintainerEmail = maintainerEmail?maintainerEmail[0]:'';
-        var maintainerName = manifest.maintainer.replace(maintainerEmail, '').trim();
-        maintainerEmail = maintainerEmail.replace('<', '').replace('>', '');
-
-        var props = { PACKAGE_NAME: manifest.name,
-                      PACKAGE_TITLE: manifest.title,
-                      PACKAGE_VERSION: manifest.version,
-                      MAINTAINER_NAME: maintainerName,
-                      MAINTAINER_EMAIL: maintainerEmail,
-                      PACKAGE_DESCRIPTION: manifest.description,
-                      PACKAGE_ICON: icon };
-        var templateDir = path.join(campoDir, 'bin', 'templates', 'project', 'misc');
-        var templates = [{source: path.join(templateDir, 'changelog'), dest: path.join(debDir, 'debian', 'changelog')},
-                         {source: path.join(templateDir, 'compat'), dest: path.join(debDir, 'debian', 'compat')},
-                         {source: path.join(templateDir, 'control'), dest: path.join(debDir, 'debian', 'control')},
-                         {source: path.join(templateDir, 'rules'), dest: path.join(debDir, 'debian', 'rules')},
-                         {source: path.join(templateDir, 'cordova.desktop'), dest: path.join(debDir, 'debian', 'cordova.desktop')},
-                         {source: path.join(templateDir, 'install'), dest: path.join(debDir, 'debian', manifest.name + '.install')}];
-        for (var i = 0; i < templates.length; i++) {
-            fillTemplate(templates[i].source, templates[i].dest, props);
-        }
-        logger.warn('In order to build debian package, execute: ');
-        logger.warn('cd ' + debDir + '; ' + 'debuild');
+	var debDir;
+	return Utils.execAsync(cmakeCmd).then(function () {
+            return Utils.execAsync('make -j ' + cpuCount() + '; make install');
+	}).then(function () {
+            Utils.cp(path.join(ubuntuDir, 'config.xml'), prefixDir);
+            Utils.cp(path.join(ubuntuDir, 'www', '*'), path.join(prefixDir, 'www'));
+            Utils.cp(path.join(ubuntuDir, 'qml', '*'), path.join(prefixDir, 'qml'));
+	    
+            Utils.popd();
+	    
+            var manifest = JSON.parse(fs.readFileSync(path.join(ubuntuDir, 'manifest.json'), {encoding: "utf8"}));
+	    
+            assert(manifest.name.length);
+            assert(manifest.name.indexOf(' ') == -1);
+	    
+            debDir = path.join(nativeDir, manifest.name);
+	    
+            shell.rm('-rf', debDir);
+	    
+            shell.mkdir('-p', path.join(debDir, 'debian'));
+            Utils.cp(path.join(campoDir, '*'), debDir);
+	    
+            Utils.cp(path.join(ubuntuDir, 'config.xml'), path.join(debDir, 'debian'));
+            Utils.cp(path.join(ubuntuDir, 'www', '*'), path.join(debDir, 'www'));
+            Utils.cp(path.join(ubuntuDir, 'qml', '*'), path.join(debDir, 'qml'));
+	    
+            var destDir = path.join('/opt', manifest.name);
+	    
+            var icon = fs.readFileSync(path.join(ubuntuDir, 'cordova.desktop'), {encoding: "utf8"}).match(/^Icon=(.+)$/m);
+            icon = icon ? '/opt/' + manifest.name + '/' + icon[1] : 'qmlscene';
+	    
+            var maintainerEmail = manifest.maintainer.match('<.+>$');
+            maintainerEmail = maintainerEmail?maintainerEmail[0]:'';
+            var maintainerName = manifest.maintainer.replace(maintainerEmail, '').trim();
+            maintainerEmail = maintainerEmail.replace('<', '').replace('>', '');
+	    
+            var props = { PACKAGE_NAME: manifest.name,
+			  PACKAGE_TITLE: manifest.title,
+			  PACKAGE_VERSION: manifest.version,
+			  MAINTAINER_NAME: maintainerName,
+			  MAINTAINER_EMAIL: maintainerEmail,
+			  PACKAGE_DESCRIPTION: manifest.description,
+			  PACKAGE_ICON: icon };
+            var templateDir = path.join(campoDir, 'bin', 'templates', 'project', 'misc');
+            var templates = [{source: path.join(templateDir, 'changelog'), dest: path.join(debDir, 'debian', 'changelog')},
+                             {source: path.join(templateDir, 'compat'), dest: path.join(debDir, 'debian', 'compat')},
+                             {source: path.join(templateDir, 'control'), dest: path.join(debDir, 'debian', 'control')},
+                             {source: path.join(templateDir, 'rules'), dest: path.join(debDir, 'debian', 'rules')},
+                             {source: path.join(templateDir, 'cordova.desktop'), dest: path.join(debDir, 'debian', 'cordova.desktop')},
+                             {source: path.join(templateDir, 'install'), dest: path.join(debDir, 'debian', manifest.name + '.install')}];
+            for (var i = 0; i < templates.length; i++) {
+		fillTemplate(templates[i].source, templates[i].dest, props);
+            }
+            logger.warn('Note: to build a debian package, run: ');
+            logger.warn(' cd ' + debDir + '; ' + 'debuild');
+	});
     });
 };
+
+
 
 /**
 *   Generates a file from a template source, injecting the values contained in the
@@ -301,18 +303,62 @@ function cpuCount() {
 }
 
 function checkEnv(ubuntuDir) {
-    var deps = additionalDependencies(ubuntuDir).join(' ');
+    var deps = [
+    'click',
+    'cmake', 
+    'libicu-dev', 
+    'pkg-config', 
+    'devscripts', 
+    'qtbase5-dev', 
+    'qtchooser', 
+    'qtdeclarative5-dev', 
+    'qtfeedback5-dev', 
+    'qtlocation5-dev', 
+    'qtmultimedia5-dev', 
+    'qtpim5-dev', 
+    'libqt5sensors5-dev', 
+    'qtsystems5-dev'
+    ];
+
+    deps = deps.concat(additionalDependencies(ubuntuDir));
+    deps = deps.join(' ');
     deps = deps.replace(/:ARCH/g, '');
 
     if (!deps.length)
         return;
 
     var cmd = "dpkg-query -Wf'${db:Status-abbrev}' " + deps;
-    var res = Utils.execSync(cmd);
-    if (res.code !== 0 || res.output.indexOf('un') !== -1) {
-        logger.error("Error: missing packages" + deps);
-        process.exit(1);
+    var installCmd = "sudo apt-get install " + deps;
+
+    var res = shell.exec(cmd);
+
+    if (res.code !== 0 || res.output.match(/[^i ]/)) {
+        logger.error("Error: missing packages " + deps);
+
+        var deferred = Q.defer();
+
+        var readline = require('readline');
+        var rl = readline.createInterface(process.stdin, process.stdout);
+        rl.setPrompt('Install missing packages? (Yn)> ');
+        rl.prompt();
+
+        rl.on('line', function(line) {
+            rl.close();
+            if (line !== 'Y' && line !== 'y') {
+                deferred.reject(new Error());
+                return;
+            }
+
+            Utils.execAsync(installCmd).then(function() {
+                deferred.resolve();
+            }).catch(function (error) {
+                deferred.reject(new Error());
+            }).done();
+        });
+
+        return deferred.promise;
     }
+    return Q();
 }
 
 function checkChrootEnv(ubuntuDir, architecture, framework) {
