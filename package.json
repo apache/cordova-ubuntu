@@ -1,6 +1,6 @@
 {
     "name": "cordova-ubuntu",
-    "version": "4.4.0-dev",
+    "version": "4.3.1-dev",
     "description": "Cordova tooling for the Ubuntu platform.",
     "main": "bin/create",
     "repository": {
@@ -39,6 +39,10 @@
         {
             "name": "Jean-Francois Moy",
             "email": "jean-francois.moy@canonical.com"
+        },
+        {
+            "name": "David Barth"
+            "email": "david.barth@canonical.com"
         }
     ],
     "license": "Apache Version 2.0"

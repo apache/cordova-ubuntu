@@ -20,6 +20,81 @@
 -->
 ## Release Notes for Cordova Ubuntu ##
 
+### 4.3.1 ###
+
+* default icon name www/img/logo.png
+* add defaut icon parameter to config.xml
+* use QUrl::fromLocalFile()
+* set mainUrl when the file exists
+* fix critical issue introduced by general URL support changes earlier
+* check if content src points to a url or local file
+* fix typo
+* better info msg
+* don't check deps at create time and propose to auto-install once at build time; this is for the native/desktop build
+* Update JS snapshot to version 4.4.0-dev (via coho)
+* Set VERSION to 4.4.0-dev (via coho)
+
+### 4.1.0 (4.0.0) ? ###
+
+* CB-9836 Add .gitattributes to prevent CRLF line endings in repos
+* CB-9800 Fixing contribute link.
+* build: fix mechanism for additional dependencies
+* CB-8965 Copy cordova-js-src directory to platform folder during create. This closes #11
+* add default icon
+* build: split error message
+* use 1.3 policy_version for ubuntu-sdk-15.04+
+* fix desktop file generator
+* support ubuntu-sdk-15.04
+* CordovaViewInternal: provide ItemSelector for oxide
+* build: misc fix
+* build: suggest to install dependencies automatically
+* support Orientation preference from config.xml
+* add custom hooks into manifest.js
+* CB-8417 moved platform specific js into platform
+* Update JS snapshot to version 4.1.0-dev (via coho)
+* Set VERSION to 4.1.0-dev (via coho)
+
+### 3.7.0 ###
+
+* change version in CordovaUbuntu/qmldir
+* add missing license header
+* add missing license header
+* fix warning message about missing chroot
+* move manifest generator from cordova-lib
+* unit tests
+* misc
+* CB-5655: make visible cordova version(native)
+* set UBUNTU_TOUCH flag for device target
+* Added device flag in build for building for phone. Desktop otherwise.
+* set ubuntu-sdk-14.10 as default framework
+* Logger.warn instead of Logger.info for some key messages.
+* Use --verbose instead of --debug as argument to enabled additional output.
+* Run On Device was not working because of invalid calls.
+* Adb Exec Sync: fixed function call.
+* Added node_modules to .gitignore.
+* Added a new logging system as well as more meaningful debugging messages.
+* Corrected a spelling mistake in a msg property key.
+* Removed old msg.js file as we now use constants instead.
+* Added node_modules to .gitignore.
+* Run On Device was not working because of invalid calls.
+* Adb Exec Sync: fixed function call.
+* Fixed issues identified by @zaspire for merge request.
+* Separated ubuntu.js in multiple tasks files for better maintainability. Use template folder for storing project assets and tasks. Deleted unecessary package.json. Various improvements.
+* add wrapper class for cordova.xml
+* port to oxide
+* implement uri whitelist
+* bin/build/run: skip signature verification
+* add bin/update
+* bin/build/run: support deploying to latest Ubuntu Touch
+* bin/build: produce debian source package instead of binary
+* set correct deb dependencies
+* put icon into generated deb
+* make sure 'native' dir exist
+* Update JS snapshot to version 3.7.0-dev (via coho)
+* added RELEASENOTES.md
+* Update JS snapshot to version 3.7.0-dev (via coho)
+* Set VERSION to 3.7.0-dev (via coho)
+
 ### 3.6.0 ###
 
 * Set VERSION to 3.6.0 (via coho)
@@ -43,3 +118,42 @@
 * CB-6818 Add license for CONTRIBUTING.md
 * Update JS snapshot to version 3.6.0-dev (via coho)
 * Set VERSION to 3.6.0-dev (via coho)
+
+### 3.5.0 ###
+
+* CB-6954: updated version to 3.5.0 in package.json
+* another qt 5.2 workaround
+* allow inter plugin communication
+* add .editorconfig
+* workaround for qt 5.2
+* check requirements before build
+* bin/build/[build,run] always report errors
+* don't hard code cpu count
+* bin/build: fixes for --nobuild
+* bin/build: specify framework instead of series for click chroot
+* bin/build: switch to async shelljs.exec
+* CB-6559: added top level package.json
+* CB-6491 add CONTRIBUTING.md
+* Update JS snapshot to version 3.5.0-dev (via coho)
+* Update JS snapshot to version 3.5.0-dev (via coho)
+* Set VERSION to 3.5.0-dev (via coho)
+
+### 3.4.0 ###
+
+* support content property from config.xml
+* Expose main webview as a property
+* fix bin/build/version
+* src/cordova.cpp: better debug message
+* change compiler flags
+* bin/build/build: generate deb package
+* bin/build/run: --nobuild option
+* bin/build/run: --target option
+* bin/run: use optimist node module for option parsing
+* bin/build/run build only for target
+* bin/build/run: add --debug option
+* support running apps on device
+* Update JS snapshot to version 3.4.0-dev (via coho)
+* use child_process.exec correctly
+* bin/create check for shelljs/elementtree
+* Update JS snapshot to version 3.4.0-dev (via coho)
+* Set VERSION to 3.4.0-dev (via coho)
