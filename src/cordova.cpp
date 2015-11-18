@@ -35,7 +35,7 @@ Cordova::Cordova(const QDir &wwwDir, QQuickItem *item, QObject *parent)
     } else if (!_www.exists(_config.content())) {
         qCritical() << _config.content() << "does not exist";
     } else {
-        _mainUrl = QUrl::fromUserInput(_www.absoluteFilePath(_config.content()))
+        _mainUrl = QUrl::fromLocalFile(_www.absoluteFilePath(_config.content()))
 	  .toString();
     }
 
