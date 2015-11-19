@@ -28,6 +28,7 @@ var projectPath = args[2];
 var currentVersion = fs.readFileSync(path.join(projectPath, 'build', 'VERSION'), {encoding: "utf8"});
 var version = fs.readFileSync(path.join(ROOT, 'VERSION'), {encoding: "utf8"});
 if (version !== currentVersion) {
+    var check_reqs = require('./lib/check_reqs').check_reqs;
     check_reqs(function () {
         require('./lib/update').updateProject(projectPath, ROOT);
     });
