@@ -64,5 +64,5 @@ exports.updateProject = function(projectPath) {
     shell.mv(path.join(tmp, 'coreplugins.cpp'), path.join(projectPath, 'build', 'src'));
 
     shell.rm('-r', tmp);
-    console.log('project updated'.green);
+    console.log('project updated');
 }
