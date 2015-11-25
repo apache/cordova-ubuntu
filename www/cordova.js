@@ -817,7 +817,7 @@ module.exports = channel;
 
 });
 
-// file: /home/dbarth/devel/wily/cordova/cordova-ubuntu/cordova-js-src/exec.js
+// file: /Users/steveng/repo/cordova/cordova-ubuntu/cordova-js-src/exec.js
 define("cordova/exec", function(require, exports, module) {
 
 var cordova = require('cordova'),
@@ -1368,7 +1368,7 @@ exports.reset();
 
 });
 
-// file: /home/dbarth/devel/wily/cordova/cordova-ubuntu/cordova-js-src/platform.js
+// file: /Users/steveng/repo/cordova/cordova-ubuntu/cordova-js-src/platform.js
 define("cordova/platform", function(require, exports, module) {
 
 module.exports = {
