@@ -22,17 +22,13 @@
 
 ### 4.3.1 ###
 
-* default icon name www/img/logo.png
-* add defaut icon parameter to config.xml
-* use QUrl::fromLocalFile()
-* set mainUrl when the file exists
+* default icon name `www/img/logo.png`
+* add defaut icon parameter to `config.xml`
+* use `QUrl::fromLocalFile()`
+* set `mainUrl` when the file exists
 * fix critical issue introduced by general URL support changes earlier
 * check if content src points to a url or local file
-* fix typo
-* better info msg
-* don't check deps at create time and propose to auto-install once at build time; this is for the native/desktop build
-* Update JS snapshot to version 4.4.0-dev (via coho)
-* Set VERSION to 4.4.0-dev (via coho)
+* don't check deps at create time and propose to `auto-install` once at build time; this is for the `native/desktop` build
 
 ### 4.1.0 (4.0.0) ? ###
 
