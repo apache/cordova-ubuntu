@@ -22,7 +22,9 @@
 
 ### 4.3.2-pre ###
 
-* change click framework to 15.04 by default (14.10 is deprecated)
+* CB-10119 - change click framework to 15.04 by default (14.10 is deprecated)
+* check_reqs only verifies node dependencies now, not ubuntu build deps which
+  are checked once trying to build
 
 ### 4.3.1 ###
 
