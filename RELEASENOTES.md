@@ -20,6 +20,10 @@
 -->
 ## Release Notes for Cordova Ubuntu ##
 
+### 4.3.2-pre ###
+
+* change click framework to 15.04 by default (14.10 is deprecated)
+
 ### 4.3.1 ###
 
 * default icon name `www/img/logo.png`
