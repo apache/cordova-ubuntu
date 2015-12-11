@@ -23,7 +23,7 @@ var exec = require('child_process').exec;
 
 exports.check_reqs = function (callback) {
     if (!checkNodeDependencies()) {
-        installNodeDependencies(checkUbuntuDependencies.bind(null, callback));
+        installNodeDependencies(callback);
     } else {
 	// don't check platform dependencies yet, as they depend on the target
 	// architecture; the base cordova / node / npm install should be
