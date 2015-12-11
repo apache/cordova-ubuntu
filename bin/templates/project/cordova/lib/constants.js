@@ -19,7 +19,7 @@
  */
 
 module.exports = {
-    'DEFAULT_FRAMEWORK': 'ubuntu-sdk-14.10',
+    'DEFAULT_FRAMEWORK': 'ubuntu-sdk-15.04',
     'DEFAULT_ARCH': 'armhf',
     'PLATFORM_TYPES': {
         'PHONE': 0,
