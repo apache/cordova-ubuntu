@@ -29,7 +29,7 @@
 ### 4.3.1 ###
 
 * default icon name `www/img/logo.png`
-* add defaut icon parameter to `config.xml`
+* add default icon parameter to `config.xml`
 * use `QUrl::fromLocalFile()`
 * set `mainUrl` when the file exists
 * fix critical issue introduced by general URL support changes earlier
