@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2013 Canonical Ltd.
+ * Copyright 2013-2016 Canonical Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@
  *
 */
 import QtQuick 2.0
-import com.canonical.Oxide 1.0
+import com.canonical.Oxide 1.10
 import "cordova_wrapper.js" as CordovaWrapper
-import Ubuntu.Components 0.1
-import Ubuntu.Components.Popups 0.1
+import Ubuntu.Components 1.0
+import Ubuntu.Components.Popups 1.0
 
 OrientationHelper {
     id: root
@@ -129,7 +129,7 @@ OrientationHelper {
                 cordova.setTitle(webView.title)
             }
 
-            onLoadingChanged: {
+            onLoadingStateChanged: {
                 if (!webView.loading) {
                     root.completed()
                     cordova.loadFinished(true)
