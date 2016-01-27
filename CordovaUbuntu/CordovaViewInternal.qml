@@ -85,8 +85,8 @@ OrientationHelper {
             context: WebContext {
                 id: webcontext
 
-                devtoolsEnabled: true
-                devtoolsPort: 9222
+                devtoolsEnabled: debuggingEnabled
+                devtoolsPort: debuggingEnabled ? 9222 : -1
 
                 userScripts: [
                     UserScript {

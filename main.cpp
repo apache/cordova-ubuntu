@@ -1,5 +1,5 @@
 /*
- *  Copyright 2013 Canonical Ltd.
+ *  Copyright 2013-2016 Canonical Ltd.
  *  Copyright 2011 Wolfgang Koller - http://www.gofg.at/
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,7 +19,11 @@
 #include <QApplication>
 #include <QtQuick>
 
-static void customMessageOutput(QtMsgType type, const QMessageLogContext &, const QString &msg) {
+static void customMessageOutput(
+        QtMsgType type,
+        const QMessageLogContext &,
+        const QString &msg) {
+
     switch (type) {
     case QtDebugMsg:
         if (qgetenv("DEBUG").size()) {
@@ -39,10 +43,13 @@ static void customMessageOutput(QtMsgType type, const QMessageLogContext &, cons
 }
 
 int main(int argc, char *argv[]) {
-    printf("\nApache Cordova native platform version %s is starting\n\n", CORDOVA_UBUNTU_VERSION);
+    printf("\nApache Cordova native platform version %s is starting\n\n"
+           , CORDOVA_UBUNTU_VERSION);
+
     fflush(stdout);
 
     qInstallMessageHandler(customMessageOutput);
+
     QApplication app(argc, argv);
 
     //TODO: switch to options parser
@@ -60,7 +67,16 @@ int main(int argc, char *argv[]) {
     QQmlApplicationEngine view;
 
     QDir workingDir = QApplication::applicationDirPath();
-    view.rootContext()->setContextProperty("www", wwwDir.absolutePath());
+
+    bool debuggingEnabled =
+            (qEnvironmentVariableIsSet("DEBUG")
+             && QString(qgetenv("DEBUG")) == "1");
+
+    view.rootContext()->setContextProperty(
+                "debuggingEnabled", debuggingEnabled);
+
+    view.rootContext()->setContextProperty(
+                "www", wwwDir.absolutePath());
 
     view.load(QUrl(QString("%1/qml/main.qml").arg(workingDir.absolutePath())));
 
