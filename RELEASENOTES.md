@@ -20,6 +20,12 @@
 -->
 ## Release Notes for Cordova Ubuntu ##
 
+### 4.3.3
+* Fix reliance on deprecated Oxide's onLoadingChanged signal
+* Fix debugging enabled flag & remove webkit specific bit
+* fix typo
+* adding missing node_modules
+
 ### 4.3.2 ###
 
 * CB-10119 - change click framework to 15.04 by default (14.10 is deprecated)
