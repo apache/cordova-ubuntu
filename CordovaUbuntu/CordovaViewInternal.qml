@@ -17,7 +17,7 @@
  *
 */
 import QtQuick 2.0
-import com.canonical.Oxide 1.10
+import com.canonical.Oxide 1.9
 import "cordova_wrapper.js" as CordovaWrapper
 import Ubuntu.Components 1.0
 import Ubuntu.Components.Popups 1.0
