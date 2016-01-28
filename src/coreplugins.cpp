@@ -26,7 +26,7 @@ INSERT_HEADER_HERE
 
 extern "C" {
 
-Q_DECL_EXPORT QList<QSharedPointer<CPlugin>> cordovaGetPluginInstances(Cordova *) {
+Q_DECL_EXPORT QList<QSharedPointer<CPlugin>> cordovaGetPluginInstances(Cordova *cordova) {
     QList<QSharedPointer<CPlugin>> res;
 
     INSERT_PLUGIN_HERE
