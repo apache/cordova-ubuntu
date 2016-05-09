@@ -18,15 +18,18 @@
 #include <QtCore>
 #include <QApplication>
 #include <QtQuick>
+#include <QtNetwork/QNetworkInterface>
 
-static void customMessageOutput(
+const int kDebuggingDevtoolsDefaultPort = 9222;
+
+void customMessageOutput(
         QtMsgType type,
         const QMessageLogContext &,
         const QString &msg) {
 
     switch (type) {
     case QtDebugMsg:
-        if (qgetenv("DEBUG").size()) {
+      if (QString::fromUtf8(qgetenv("DEBUG")) == "1") {
             fprintf(stderr, "Debug: %s\n", msg.toStdString().c_str());
         }
         break;
@@ -39,7 +42,23 @@ static void customMessageOutput(
     case QtFatalMsg:
         fprintf(stderr, "Fatal: %s\n", msg.toStdString().c_str());
         abort();
+        break;
+    case QtInfoMsg:
+        fprintf(stderr, "Info: %s\n", msg.toStdString().c_str());
+        break;
     }
+}
+
+QString getDebuggingDevtoolsIp()
+{
+    QString host;
+    Q_FOREACH(QHostAddress address, QNetworkInterface::allAddresses()) {
+        if (!address.isLoopback() && (address.protocol() == QAbstractSocket::IPv4Protocol)) {
+            host = address.toString();
+            break;
+        }
+    }
+    return host;
 }
 
 int main(int argc, char *argv[]) {
@@ -74,6 +93,19 @@ int main(int argc, char *argv[]) {
 
     view.rootContext()->setContextProperty(
                 "debuggingEnabled", debuggingEnabled);
+
+    QString debuggingDevtoolsIp;
+    int debuggingDevtoolsPort = -1;
+
+    if (debuggingEnabled) {
+      debuggingDevtoolsIp = getDebuggingDevtoolsIp();
+      debuggingDevtoolsPort = kDebuggingDevtoolsDefaultPort;
+    }
+
+    view.rootContext()->setContextProperty(
+                "debuggingDevtoolsIp", debuggingDevtoolsIp);
+    view.rootContext()->setContextProperty(
+                "debuggingDevtoolsPort", debuggingDevtoolsPort);
 
     view.rootContext()->setContextProperty(
                 "www", wwwDir.absolutePath());
