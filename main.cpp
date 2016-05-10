@@ -29,7 +29,7 @@ void customMessageOutput(
 
     switch (type) {
     case QtDebugMsg:
-      if (QString::fromUtf8(qgetenv("DEBUG")) == "1") {
+        if (QString::fromUtf8(qgetenv("DEBUG")) == "1") {
             fprintf(stderr, "Debug: %s\n", msg.toStdString().c_str());
         }
         break;
@@ -42,9 +42,6 @@ void customMessageOutput(
     case QtFatalMsg:
         fprintf(stderr, "Fatal: %s\n", msg.toStdString().c_str());
         abort();
-        break;
-    case QtInfoMsg:
-        fprintf(stderr, "Info: %s\n", msg.toStdString().c_str());
         break;
     }
 }
@@ -100,6 +97,10 @@ int main(int argc, char *argv[]) {
     if (debuggingEnabled) {
       debuggingDevtoolsIp = getDebuggingDevtoolsIp();
       debuggingDevtoolsPort = kDebuggingDevtoolsDefaultPort;
+
+      qDebug() << QString("Devtools started at http://%1:%2")
+        .arg(debuggingDevtoolsIp)
+        .arg(debuggingDevtoolsPort);
     }
 
     view.rootContext()->setContextProperty(

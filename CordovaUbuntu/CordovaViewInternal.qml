@@ -129,8 +129,8 @@ OrientationHelper {
                     msgId: "from-cordova"
                     contexts: [usContext]
                     callback: function(msg, frame) {
-                        CordovaWrapper.messageHandler(msg.args)
-                        console.log(JSON.stringify(msg.args))
+                        CordovaWrapper.messageHandler(msg.payload)
+                        console.log('Message payload', JSON.stringify(msg.payload))
                     }
                 }
             ]
