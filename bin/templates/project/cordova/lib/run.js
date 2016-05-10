@@ -112,9 +112,7 @@ function runNative(rootDir, debug) {
     var cmd = './cordova-ubuntu www/';
     if (debug) {
         cmd = "DEBUG=1 " + cmd;
-        logger.warn('Debug enabled. \
-Try pointing a Chrome/Chromium browser \
-to http://' + getDeviceInetAddress() + ':9222');
+        logger.warn('Debug enabled. Devtools debug URL: http://' + getDeviceInetAddress(target) + ':9222');
     }
 
     logger.info('Launching the application.');
@@ -157,9 +155,7 @@ function runOnDevice(rootDir, debug, target, architecture, framework) {
     Devices.adbExec(target, 'shell "cd /home/phablet/; pkcon install-local ' + names[0] + ' -p --allow-untrusted -y"', {silent: false});
 
     if (debug) {
-        logger.warn('Debug enabled. \
-Try pointing a Chrome/Chromium browser \
-to http://' + getDeviceInetAddress(target) + ':9222');
+        logger.warn('Debug enabled. Devtools debug URL: http://' + getDeviceInetAddress(target) + ':9222');
         Devices.adbExec(target, 'forward tcp:9222 tcp:9222');
     }
 
