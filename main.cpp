@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
       debuggingDevtoolsIp = getDebuggingDevtoolsIp();
       debuggingDevtoolsPort = kDebuggingDevtoolsDefaultPort;
 
-      qDebug() << QString("Devtools started at http://%1:%2")
+      qDebug() << QString("Devtools URL: http://%1:%2")
         .arg(debuggingDevtoolsIp)
         .arg(debuggingDevtoolsPort);
     }
