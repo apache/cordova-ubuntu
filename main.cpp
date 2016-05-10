@@ -88,6 +88,12 @@ int main(int argc, char *argv[]) {
             (qEnvironmentVariableIsSet("DEBUG")
              && QString(qgetenv("DEBUG")) == "1");
 
+    // TODO revamp this for something cleaner, uniform
+    // and runtime bound
+#if !defined(NDEBUG)
+    debuggingEnabled = true;
+#endif
+
     view.rootContext()->setContextProperty(
                 "debuggingEnabled", debuggingEnabled);
 

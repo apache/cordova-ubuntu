@@ -165,7 +165,7 @@ to http://' + getDeviceInetAddress(target) + ':9222');
 
     logger.info('Launching the application on your device.');
 
-    return Devices.adbExecAsync(target, 'shell "DEBUG=1 ubuntu-app-launch  \\`ubuntu-app-triplet ' + appId + '\\`"').then(function () {
+    return Devices.adbExecAsync(target, 'shell "ubuntu-app-launch  \\`ubuntu-app-triplet ' + appId + '\\`"').then(function () {
         logger.rainbow('have fun!');
         Utils.popd();
     });
