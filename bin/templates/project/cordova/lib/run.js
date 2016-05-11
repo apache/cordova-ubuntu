@@ -81,6 +81,27 @@ module.exports.run = function(rootDir, desktop, debug, target, nobuild, emulator
     });
 };
 
+function getDeviceInetAddress(target) {
+    function parseInetLines(lines) {
+        var ip = '';
+        for (var i = 0; i < lines.length; ++i) {
+            var match = /\s+inet\s+(\d+.\d+.\d+.\d+)?.*/.exec(lines[i])
+            if (match && match.length > 0 && match[1] != '127.0.0.1') {
+                ip = match[1];
+                break;
+            }
+        }
+        return ip
+    }
+    var lines = [];
+    if (target) {
+        lines = Devices.adbExec(target, 'shell ip -f inet addr').output.split('\n');
+    } else {
+        lines = Utils.execSync('ip -f inet addr').output.split('\n');
+    }
+    return parseInetLines(lines)
+}
+
 function runNative(rootDir, debug) {
     logger.info('Running Cordova');
     var ubuntuDir = path.join(rootDir, 'platforms', 'ubuntu');
@@ -91,7 +112,7 @@ function runNative(rootDir, debug) {
     var cmd = './cordova-ubuntu www/';
     if (debug) {
         cmd = "DEBUG=1 " + cmd;
-        logger.warn('Debug enabled. Try pointing a Chrome/Chromium browser to http://127.0.0.1:9222');
+        logger.warn('Debug enabled. Devtools debug URL: http://' + getDeviceInetAddress(target) + ':9222');
     }
 
     logger.info('Launching the application.');
@@ -134,13 +155,13 @@ function runOnDevice(rootDir, debug, target, architecture, framework) {
     Devices.adbExec(target, 'shell "cd /home/phablet/; pkcon install-local ' + names[0] + ' -p --allow-untrusted -y"', {silent: false});
 
     if (debug) {
-        logger.warn('Debug enabled. Try pointing a Chrome/Chromium browser to http://127.0.0.1:9222');
+        logger.warn('Debug enabled. Devtools debug URL: http://' + getDeviceInetAddress(target) + ':9222');
         Devices.adbExec(target, 'forward tcp:9222 tcp:9222');
     }
 
     logger.info('Launching the application on your device.');
 
-    return Devices.adbExecAsync(target, 'shell bash -c "ubuntu-app-launch  \\`ubuntu-app-triplet ' + appId + '\\`"').then(function () {
+    return Devices.adbExecAsync(target, 'shell "ubuntu-app-launch  \\`ubuntu-app-triplet ' + appId + '\\`"').then(function () {
         logger.rainbow('have fun!');
         Utils.popd();
     });
