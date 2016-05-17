@@ -143,9 +143,9 @@ function runOnDevice(rootDir, debug, target, architecture, framework) {
 
     assert.ok(names.length == 1);
 
-    logger.info('Killing application if already running on your device.');
+    logger.info('Stopping application if needed.');
 
-    Devices.adbExec(target, 'shell "ps -A -eo pid,cmd | grep cordova-ubuntu | awk \'{ print \\$1 }\' | xargs kill -9"');
+    Devices.adbExec(target, 'shell "ubuntu-app-stop  \\`ubuntu-app-triplet ' + appId + '\\`"');
 
     if (debug)
         Devices.adbExec(target, 'forward --remove-all');
