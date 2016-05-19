@@ -20,6 +20,15 @@
 -->
 ## Release Notes for Cordova Ubuntu ##
 
+### 4.3.4
+* fix build issue with function signature missing the cordova variable name; also avoid a warning
+* use ubuntu-app-stop to stop the app more cleanly
+* Update run devtools message
+* tweak devtools url message
+* Tweak debug launch
+* Add app launch tweaks
+* Improve debugging behavior; Add ip option
+
 ### 4.3.3
 * Fix reliance on deprecated Oxide's onLoadingChanged signal
 * Fix debugging enabled flag & remove webkit specific bit
