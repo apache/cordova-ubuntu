@@ -88,6 +88,11 @@ const CordovaInternal::Config& Cordova::config() const {
 
 
 void Cordova::initPlugins() {
+    static bool alreadyLoaded = false;
+
+    if (alreadyLoaded)
+      return;
+    
     QList<QDir> searchPath = {get_app_dir()};
 
     _plugins.clear();
@@ -114,6 +119,8 @@ void Cordova::initPlugins() {
             _plugins += plugins;
         }
     }
+
+    alreadyLoaded = true;
 }
 
 void Cordova::loadFinished(bool ok) {
