@@ -2,7 +2,7 @@
 
 /*
  *
- * Copyright 2014 Canonical Ltd.
+ * Copyright 2014-2016 Canonical Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -344,7 +344,7 @@ function checkEnv(ubuntuDir) {
 
         rl.on('line', function(line) {
             rl.close();
-            if (line !== 'Y' && line !== 'y') {
+            if (line !== 'Y' && line !== 'y' && line.length !== 0) {
                 deferred.reject(new Error());
                 return;
             }
@@ -398,7 +398,7 @@ function checkChrootEnv(ubuntuDir, architecture, framework) {
 
         rl.on('line', function(line) {
             rl.close();
-            if (line !== 'Y' && line !== 'y') {
+            if (line !== 'Y' && line !== 'y' && line.length != 0) {
                 deferred.reject(new Error());
                 return;
             }
