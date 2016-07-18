@@ -9,7 +9,8 @@ Build-Depends: ubuntu-sdk,
          libqt5sensors5-dev,
          qtsystems5-dev,
          qtlocation5-dev,
-         libicu-dev
+         libicu-dev,
+         libconnectivity-qt1-dev
 
 Package: {PACKAGE_NAME}
 Architecture: any

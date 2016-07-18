@@ -317,7 +317,8 @@ function checkEnv(ubuntuDir) {
     'qtmultimedia5-dev', 
     'qtpim5-dev', 
     'libqt5sensors5-dev', 
-    'qtsystems5-dev'
+    'qtsystems5-dev',
+    'libconnectivity-qt1-dev'
     ];
 
     deps = deps.concat(additionalDependencies(ubuntuDir));
@@ -362,7 +363,7 @@ function checkEnv(ubuntuDir) {
 }
 
 function checkChrootEnv(ubuntuDir, architecture, framework) {
-    var deps = "cmake libicu-dev:ARCH pkg-config qtbase5-dev:ARCH qtchooser qtdeclarative5-dev:ARCH qtfeedback5-dev:ARCH qtlocation5-dev:ARCH qtmultimedia5-dev:ARCH qtpim5-dev:ARCH libqt5sensors5-dev:ARCH qtsystems5-dev:ARCH ";
+    var deps = "cmake libicu-dev:ARCH pkg-config qtbase5-dev:ARCH qtchooser qtdeclarative5-dev:ARCH qtfeedback5-dev:ARCH qtlocation5-dev:ARCH qtmultimedia5-dev:ARCH qtpim5-dev:ARCH libqt5sensors5-dev:ARCH qtsystems5-dev:ARCH libconnectivity-qt1-dev:ARCH ";
     deps += additionalDependencies(ubuntuDir).join(' ');
     deps = deps.replace(/ARCH/g, architecture);
 
