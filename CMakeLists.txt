@@ -118,7 +118,13 @@ ADD_LIBRARY(coreplugins SHARED
 qt5_use_modules(coreplugins Widgets Location Sensors Feedback SystemInfo Contacts Multimedia Quick MultimediaWidgets)
 
 target_link_libraries(cordova-ubuntu cordovaubuntuplugin)
-target_link_libraries(coreplugins cordovaubuntuplugin ${PLUGIN_DEPS_LIBRARIES})
+target_link_libraries(
+  coreplugins
+  cordovaubuntuplugin
+  ${PLUGIN_DEPS_LIBRARIES}
+  ${PLUGIN_DEPS_LDFLAGS}
+  ${PLUGIN_DEPS_LDFLAGS_OTHER}
+  )
 
 install (TARGETS cordova-ubuntu DESTINATION ${CMAKE_INSTALL_PREFIX})
 install (TARGETS coreplugins DESTINATION ${CMAKE_INSTALL_PREFIX}/www)
