@@ -20,6 +20,12 @@
 -->
 ## Release Notes for Cordova Ubuntu ##
 
+### 4.3.5 (Sep 02, 2016)
+* Make sure that all plugin dependencies linking flags are taken into account when compiling
+* Add connectivity dev build dependencies
+* Fix (Yn) prompt issue with chroot install
+* initPlugins only once; See CB-11355; Thanks to Pat Deegan for pointing that out
+
 ### 4.3.4
 * fix build issue with function signature missing the cordova variable name; also avoid a warning
 * use ubuntu-app-stop to stop the app more cleanly
