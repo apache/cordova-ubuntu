@@ -1,6 +1,6 @@
 {
     "name": "cordova-ubuntu",
-    "version": "4.3.4",
+    "version": "4.3.5",
     "description": "Cordova tooling for the Ubuntu platform.",
     "main": "bin/create",
     "repository": {
